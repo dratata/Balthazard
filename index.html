@@ -1,1174 +1,1002 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Balthazard Engel Oranı Hesaplama Aracı</title>
-  <style>
-    :root {
-      --primary: #1a5276;
-      --primary-light: #2980b9;
-      --primary-dark: #154360;
-      --accent: #e74c3c;
-      --success: #27ae60;
-      --warning: #f39c12;
-      --bg: #f0f4f8;
-      --card: #ffffff;
-      --border: #d5e1ea;
-      --text: #1a252f;
-      --muted: #6c8ea4;
-      --tag-bg: #eaf4fb;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    /* ── HEADER ── */
-    header {
-      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
-      color: #fff;
-      padding: 18px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-      gap: 16px;
-    }
-    header .brand { display: flex; align-items: center; gap: 14px; }
-    header .brand svg { width: 42px; height: 42px; flex-shrink: 0; }
-    header h1 { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
-    header p { font-size: 0.78rem; opacity: 0.85; margin-top: 2px; }
-    header .header-badge {
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 20px;
-      padding: 6px 14px;
-      font-size: 0.75rem;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    /* ── LAYOUT ── */
-    .main-wrapper {
-      max-width: 1300px;
-      margin: 0 auto;
-      padding: 24px 16px 60px;
-    }
-
-    .layout-grid {
-      display: grid;
-      grid-template-columns: 1fr 400px;
-      gap: 20px;
-      align-items: start;
-    }
-
-    @media (max-width: 960px) {
-      .layout-grid { grid-template-columns: 1fr; }
-    }
-
-    /* ── CARDS ── */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-      overflow: hidden;
-    }
-    .card-header {
-      background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
-      color: #fff;
-      padding: 12px 18px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .card-header .badge {
-      background: rgba(255,255,255,0.25);
-      border-radius: 10px;
-      padding: 2px 8px;
-      font-size: 0.72rem;
-      margin-left: auto;
-    }
-    .card-body { padding: 18px; }
-
-    /* ── PATIENT FORM ── */
-    .patient-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-    }
-    .form-group label {
-      display: block;
-      font-size: 0.75rem;
-      color: var(--muted);
-      font-weight: 600;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    .form-group input, .form-group select {
-      width: 100%;
-      border: 1.5px solid var(--border);
-      border-radius: 7px;
-      padding: 8px 10px;
-      font-size: 0.88rem;
-      color: var(--text);
-      background: #fff;
-      transition: border-color 0.2s;
-      outline: none;
-    }
-    .form-group input:focus, .form-group select:focus {
-      border-color: var(--primary-light);
-    }
-
-    /* ── BRANCH TABS ── */
-    .branch-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    .branch-tab {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: 1.5px solid var(--border);
-      background: #fff;
-      cursor: pointer;
-      font-size: 0.83rem;
-      font-weight: 600;
-      color: var(--muted);
-      transition: all 0.18s;
-    }
-    .branch-tab:hover { border-color: var(--primary-light); color: var(--primary); }
-    .branch-tab.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
-    }
-    .branch-tab .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: currentColor;
-      opacity: 0.7;
-    }
-
-    /* ── SEARCH ── */
-    .search-wrap {
-      position: relative;
-      margin-bottom: 14px;
-    }
-    .search-wrap input {
-      width: 100%;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      padding: 9px 12px 9px 36px;
-      font-size: 0.88rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .search-wrap input:focus { border-color: var(--primary-light); }
-    .search-icon {
-      position: absolute;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--muted);
-      font-size: 1rem;
-    }
-
-    /* ── DISABILITY LIST ── */
-    .disability-list {
-      max-height: 420px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding-right: 4px;
-    }
-    .disability-list::-webkit-scrollbar { width: 5px; }
-    .disability-list::-webkit-scrollbar-track { background: #f0f4f8; border-radius: 10px; }
-    .disability-list::-webkit-scrollbar-thumb { background: var(--primary-light); border-radius: 10px; }
-
-    .dis-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 12px;
-      border-radius: 8px;
-      border: 1.5px solid transparent;
-      background: #f7fafd;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .dis-item:hover { border-color: var(--primary-light); background: #eaf4fb; }
-    .dis-item.selected { border-color: var(--primary); background: var(--tag-bg); }
-
-    .dis-item input[type="checkbox"] {
-      width: 16px; height: 16px;
-      accent-color: var(--primary);
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-    .dis-item .dis-name {
-      flex: 1;
-      font-size: 0.85rem;
-      line-height: 1.35;
-    }
-    .dis-item .dis-name .sub { font-size: 0.75rem; color: var(--muted); display: block; }
-
-    .pct-control {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-    .pct-control input[type="number"] {
-      width: 58px;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-      padding: 4px 6px;
-      font-size: 0.82rem;
-      text-align: center;
-      outline: none;
-    }
-    .pct-control input[type="number"]:focus { border-color: var(--primary-light); }
-    .pct-control .pct-sign { font-size: 0.78rem; color: var(--muted); font-weight: 700; }
-
-    .cat-header {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--primary);
-      padding: 10px 4px 4px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 2px;
-    }
-
-    /* ── RIGHT PANEL ── */
-    .right-panel { display: flex; flex-direction: column; gap: 16px; }
-
-    /* ── SELECTED LIST ── */
-    .selected-empty {
-      color: var(--muted);
-      font-size: 0.83rem;
-      text-align: center;
-      padding: 24px 0;
-    }
-    .sel-list { display: flex; flex-direction: column; gap: 6px; }
-    .sel-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      background: var(--tag-bg);
-      border: 1px solid #c5dff0;
-      border-radius: 8px;
-      font-size: 0.82rem;
-    }
-    .sel-item .sel-name { flex: 1; line-height: 1.3; }
-    .sel-item .sel-name .sel-branch {
-      font-size: 0.7rem;
-      color: var(--muted);
-      display: block;
-    }
-    .sel-pct {
-      font-weight: 700;
-      color: var(--primary);
-      font-size: 0.88rem;
-      min-width: 38px;
-      text-align: right;
-    }
-    .sel-del {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #c0392b;
-      font-size: 1.1rem;
-      line-height: 1;
-      padding: 0 2px;
-      opacity: 0.7;
-    }
-    .sel-del:hover { opacity: 1; }
-
-    /* ── FORMULA STEPS ── */
-    .formula-steps {
-      font-size: 0.78rem;
-      color: var(--muted);
-      background: #f7fafd;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      max-height: 180px;
-      overflow-y: auto;
-      line-height: 1.7;
-    }
-    .formula-steps .step { display: flex; gap: 8px; align-items: baseline; }
-    .formula-steps .step .lbl { font-weight: 700; color: var(--primary); min-width: 26px; }
-
-    /* ── RESULT ── */
-    .result-box {
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      transition: all 0.3s;
-    }
-    .result-box.empty { background: #f0f4f8; border: 2px dashed var(--border); }
-    .result-box.active { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: #fff; }
-
-    .result-pct {
-      font-size: 3.2rem;
-      font-weight: 800;
-      line-height: 1;
-      margin-bottom: 4px;
-    }
-    .result-label { font-size: 0.88rem; opacity: 0.9; margin-bottom: 12px; }
-    .result-class {
-      display: inline-block;
-      padding: 5px 16px;
-      border-radius: 20px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      background: rgba(255,255,255,0.2);
-      border: 1px solid rgba(255,255,255,0.4);
-    }
-    .result-class.c0 { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
-    .result-class.c1 { background: #fff8e1; color: #f57f17; border-color: #ffe082; }
-    .result-class.c2 { background: #fff3e0; color: #e65100; border-color: #ffcc80; }
-    .result-class.c3 { background: #fce4ec; color: #880e4f; border-color: #f48fb1; }
-    .result-class.c4 { background: #f3e5f5; color: #4a148c; border-color: #ce93d8; }
-
-    /* ── BUTTONS ── */
-    .btn-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 9px 18px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 600;
-      transition: all 0.18s;
-    }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-danger { background: #e74c3c; color: #fff; }
-    .btn-danger:hover { background: #c0392b; }
-    .btn-outline {
-      background: #fff;
-      color: var(--primary);
-      border: 1.5px solid var(--primary);
-    }
-    .btn-outline:hover { background: var(--tag-bg); }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    /* ── FORMULA INFO ── */
-    .formula-info {
-      background: #fff8e1;
-      border: 1px solid #ffe082;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 0.78rem;
-      color: #5d4037;
-      line-height: 1.6;
-    }
-    .formula-info code {
-      background: rgba(0,0,0,0.07);
-      padding: 1px 5px;
-      border-radius: 4px;
-      font-family: monospace;
-      font-size: 0.8rem;
-    }
-
-    /* ── PRINT ── */
-    @media print {
-      header .header-badge { display: none; }
-      .btn-row, .branch-tabs, .search-wrap, .disability-list, .cat-header { display: none !important; }
-      .layout-grid { grid-template-columns: 1fr; }
-      .main-wrapper { padding: 0; }
-      body { background: #fff; }
-      .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
-      .right-panel { display: flex !important; }
-      .print-show { display: block !important; }
-      .no-print { display: none !important; }
-    }
-    .print-show { display: none; }
-
-    /* ── NOTIFICATION ── */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: var(--primary);
-      color: #fff;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      z-index: 1000;
-      animation: slideIn 0.3s ease;
-    }
-    @keyframes slideIn { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
-
-    /* ── MISC ── */
-    .section-gap { margin-bottom: 14px; }
-    .no-results { text-align: center; color: var(--muted); font-size: 0.83rem; padding: 20px; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Balthazard Engel Oranı Hesaplama</title>
+<style>
+:root{--p:#1a5276;--pl:#2980b9;--pd:#154360;--bg:#f0f4f8;--card:#fff;--bdr:#d5e1ea;--txt:#1a252f;--muted:#6c8ea4;--tagbg:#eaf4fb;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;font-size:14px;}
+header{background:linear-gradient(135deg,var(--pd),var(--p) 60%,var(--pl));color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.18);}
+header svg{width:38px;height:38px;flex-shrink:0;}
+header h1{font-size:1.15rem;font-weight:700;}
+header p{font-size:.72rem;opacity:.85;}
+header .hbadge{margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:5px 12px;font-size:.72rem;white-space:nowrap;flex-shrink:0;}
+.wrap{max-width:1380px;margin:0 auto;padding:18px 12px 60px;}
+.grid{display:grid;grid-template-columns:1fr 410px;gap:16px;align-items:start;}
+@media(max-width:960px){.grid{grid-template-columns:1fr;}}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden;margin-bottom:14px;}
+.ch{background:linear-gradient(90deg,var(--p),var(--pl));color:#fff;padding:10px 16px;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:7px;}
+.ch .cbadge{background:rgba(255,255,255,.25);border-radius:10px;padding:1px 8px;font-size:.7rem;margin-left:auto;}
+.cb{padding:14px 16px;}
+/* patient */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;}
+.fg label{display:block;font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;}
+.fg input,.fg select{width:100%;border:1.5px solid var(--bdr);border-radius:6px;padding:7px 9px;font-size:.84rem;color:var(--txt);outline:none;transition:border-color .2s;}
+.fg input:focus,.fg select:focus{border-color:var(--pl);}
+/* branch tabs */
+.btabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.btab{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:7px;border:1.5px solid var(--bdr);background:#fff;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--muted);transition:all .15s;}
+.btab:hover{border-color:var(--pl);color:var(--p);}
+.btab.active{background:var(--p);border-color:var(--p);color:#fff;}
+.btab .dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.8;}
+/* search */
+.swrap{position:relative;margin-bottom:10px;}
+.swrap input{width:100%;border:1.5px solid var(--bdr);border-radius:7px;padding:8px 10px 8px 32px;font-size:.84rem;outline:none;transition:border-color .2s;}
+.swrap input:focus{border-color:var(--pl);}
+.sico{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem;}
+/* list */
+.dlist{max-height:440px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;padding-right:3px;}
+.dlist::-webkit-scrollbar{width:4px;}
+.dlist::-webkit-scrollbar-thumb{background:var(--pl);border-radius:10px;}
+.cath{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--p);padding:8px 3px 3px;border-bottom:1px solid var(--bdr);margin-bottom:2px;}
+.ditem{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;border:1.5px solid transparent;background:#f7fafd;cursor:pointer;transition:all .14s;}
+.ditem:hover{border-color:var(--pl);background:#eaf4fb;}
+.ditem.sel{border-color:var(--p);background:var(--tagbg);}
+.ditem input[type=checkbox]{width:15px;height:15px;accent-color:var(--p);cursor:pointer;flex-shrink:0;}
+.dname{flex:1;font-size:.81rem;line-height:1.3;}
+.dname .dsub{font-size:.7rem;color:var(--muted);display:block;}
+/* region badge in list */
+.rbadge{font-size:.65rem;background:#e8f4fd;color:var(--p);border:1px solid #b8d8f0;border-radius:4px;padding:1px 5px;white-space:nowrap;flex-shrink:0;}
+/* pct input */
+.pctl{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.pctl input[type=number]{width:52px;border:1.5px solid var(--bdr);border-radius:5px;padding:3px 5px;font-size:.8rem;text-align:center;outline:none;}
+.pctl input[type=number]:focus{border-color:var(--pl);}
+.pctl .psign{font-size:.72rem;color:var(--muted);font-weight:700;}
+/* selected panel */
+.selempty{color:var(--muted);font-size:.82rem;text-align:center;padding:20px 0;}
+.slist{display:flex;flex-direction:column;gap:7px;}
+.sitem{border:1.5px solid #c5dff0;border-radius:8px;background:var(--tagbg);overflow:hidden;}
+.sitem-top{display:flex;align-items:center;gap:7px;padding:7px 10px;}
+.sname{flex:1;font-size:.81rem;font-weight:600;line-height:1.25;}
+.sname .sbranch{font-size:.68rem;color:var(--muted);font-weight:400;display:block;}
+.sdel{background:none;border:none;cursor:pointer;color:#c0392b;font-size:1.1rem;line-height:1;padding:0 2px;opacity:.7;}
+.sdel:hover{opacity:1;}
+/* conversion chain */
+.chain{display:flex;align-items:center;flex-wrap:wrap;gap:3px;padding:5px 10px 7px;border-top:1px dashed #c5dff0;}
+.cstep{display:flex;align-items:center;gap:3px;}
+.cstep-box{font-size:.68rem;padding:2px 6px;border-radius:4px;background:#ddeeff;color:#1a5276;border:1px solid #b8d8f0;white-space:nowrap;}
+.cstep-box.final{background:var(--p);color:#fff;border-color:var(--pd);font-weight:700;font-size:.72rem;}
+.carrow{font-size:.65rem;color:var(--muted);}
+/* formula info */
+.finfo{background:#fff8e1;border:1px solid #ffe082;border-radius:7px;padding:9px 13px;font-size:.76rem;color:#5d4037;line-height:1.6;}
+.finfo code{background:rgba(0,0,0,.07);padding:1px 4px;border-radius:3px;font-family:monospace;}
+/* steps */
+.fsteps{font-size:.75rem;color:var(--muted);background:#f7fafd;border:1px solid var(--bdr);border-radius:7px;padding:9px 12px;max-height:200px;overflow-y:auto;line-height:1.75;}
+.fstep{display:flex;gap:7px;align-items:baseline;}
+.fstep .fl{font-weight:700;color:var(--p);min-width:22px;}
+/* result */
+.rbox{border-radius:10px;padding:18px;text-align:center;transition:all .3s;}
+.rbox.empty{background:#f0f4f8;border:2px dashed var(--bdr);}
+.rbox.active{background:linear-gradient(135deg,var(--pd),var(--p));color:#fff;}
+.rpct{font-size:3rem;font-weight:800;line-height:1;margin-bottom:4px;}
+.rlabel{font-size:.84rem;opacity:.9;margin-bottom:10px;}
+.rcls{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.78rem;font-weight:700;}
+.rcls.c0{background:#e8f5e9;color:#2e7d32;}
+.rcls.c1{background:#fff8e1;color:#f57f17;}
+.rcls.c2{background:#fff3e0;color:#e65100;}
+.rcls.c3{background:#fce4ec;color:#880e4f;}
+.rcls.c4{background:#f3e5f5;color:#4a148c;}
+/* buttons */
+.brow{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{display:flex;align-items:center;gap:5px;padding:8px 16px;border-radius:7px;border:none;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .16s;}
+.btn-p{background:var(--p);color:#fff;} .btn-p:hover{background:var(--pd);}
+.btn-d{background:#e74c3c;color:#fff;} .btn-d:hover{background:#c0392b;}
+.btn-o{background:#fff;color:var(--p);border:1.5px solid var(--p);} .btn-o:hover{background:var(--tagbg);}
+/* toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--p);color:#fff;padding:9px 16px;border-radius:7px;font-size:.82rem;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:1000;animation:sli .3s ease;}
+@keyframes sli{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+.nores{text-align:center;color:var(--muted);font-size:.82rem;padding:18px;}
+/* print */
+@media print{
+  .btabs,.swrap,.dlist,.cath,.brow,.finfo,.hbadge,.no-print{display:none!important;}
+  .grid{grid-template-columns:1fr;}
+  .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid;}
+  body{background:#fff;}
+  .rpct{font-size:2.2rem;}
+}
+</style>
 </head>
 <body>
-
 <header>
-  <div class="brand">
-    <svg viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="21" cy="21" r="20" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
-      <path d="M21 8v5M21 29v5M8 21h5M29 21h5" stroke="white" stroke-width="2" stroke-linecap="round"/>
-      <circle cx="21" cy="21" r="7" fill="rgba(255,255,255,0.9)"/>
-      <path d="M18 21h6M21 18v6" stroke="#1a5276" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-    <div>
-      <h1>Balthazard Engel Oranı Hesaplama</h1>
-      <p>Engelli Sağlık Kurulu — Birden Fazla Engel Birleştirme Formülü</p>
-    </div>
-  </div>
-  <div class="header-badge">T.C. 2022 Yönetmeliği</div>
+  <svg viewBox="0 0 38 38" fill="none"><circle cx="19" cy="19" r="18" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><path d="M19 7v4M19 27v4M7 19h4M27 19h4" stroke="white" stroke-width="2" stroke-linecap="round"/><circle cx="19" cy="19" r="6" fill="rgba(255,255,255,.9)"/><path d="M17 19h4M19 17v4" stroke="#1a5276" stroke-width="2" stroke-linecap="round"/></svg>
+  <div><h1>Balthazard Engel Oranı Hesaplama</h1><p>Engelli Sağlık Kurulu — Hiyerarşik Dönüşümlü Birleştirme</p></div>
+  <span class="hbadge no-print">T.C. 2022 Yönetmeliği</span>
 </header>
-
-<div class="main-wrapper">
-
-  <!-- PATIENT INFO -->
-  <div class="card section-gap">
-    <div class="card-header">
-      <span>👤</span> Hasta Bilgileri
-    </div>
-    <div class="card-body">
-      <div class="patient-grid">
-        <div class="form-group">
-          <label>Ad Soyad</label>
-          <input type="text" id="patientName" placeholder="Hasta adı soyadı" />
-        </div>
-        <div class="form-group">
-          <label>T.C. Kimlik No</label>
-          <input type="text" id="patientTC" placeholder="___________" maxlength="11" />
-        </div>
-        <div class="form-group">
-          <label>Doğum Tarihi</label>
-          <input type="date" id="patientDOB" />
-        </div>
-        <div class="form-group">
-          <label>Cinsiyet</label>
-          <select id="patientGender">
-            <option value="">Seçiniz</option>
-            <option>Erkek</option>
-            <option>Kadın</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Kurum / Hastane</label>
-          <input type="text" id="institution" placeholder="Hastane adı" />
-        </div>
-        <div class="form-group">
-          <label>Rapor Tarihi</label>
-          <input type="date" id="reportDate" />
-        </div>
-        <div class="form-group">
-          <label>Uzman Hekim</label>
-          <input type="text" id="doctorName" placeholder="Dr. Ad Soyad" />
-        </div>
-        <div class="form-group">
-          <label>Uzmanlık</label>
-          <input type="text" id="specialty" placeholder="Uzmanlık alanı" />
-        </div>
+<div class="wrap">
+  <!-- Hasta Bilgileri -->
+  <div class="card">
+    <div class="ch">👤 Hasta Bilgileri</div>
+    <div class="cb">
+      <div class="pgrid">
+        <div class="fg"><label>Ad Soyad</label><input id="pName" type="text" placeholder="Hasta adı soyadı"/></div>
+        <div class="fg"><label>T.C. Kimlik No</label><input id="pTC" type="text" maxlength="11" placeholder="___________"/></div>
+        <div class="fg"><label>Doğum Tarihi</label><input id="pDOB" type="date"/></div>
+        <div class="fg"><label>Cinsiyet</label><select id="pGender"><option value="">Seçiniz</option><option>Erkek</option><option>Kadın</option></select></div>
+        <div class="fg"><label>Kurum / Hastane</label><input id="pInst" type="text" placeholder="Hastane adı"/></div>
+        <div class="fg"><label>Rapor Tarihi</label><input id="pDate" type="date"/></div>
+        <div class="fg"><label>Uzman Hekim</label><input id="pDoc" type="text" placeholder="Dr. Ad Soyad"/></div>
+        <div class="fg"><label>Uzmanlık Dalı</label><input id="pSpec" type="text" placeholder="Uzmanlık"/></div>
       </div>
     </div>
   </div>
-
-  <div class="layout-grid">
-
-    <!-- LEFT: BRANCH + DISABILITY SELECTOR -->
+  <div class="grid">
+    <!-- SOL: Branş + Liste -->
     <div>
       <div class="card">
-        <div class="card-header">
-          <span>🏥</span> Branş ve Engel Seçimi
-          <span class="badge no-print" id="branchBadge">FTR</span>
-        </div>
-        <div class="card-body">
-
-          <!-- Branch Tabs -->
-          <div class="branch-tabs no-print" id="branchTabs"></div>
-
-          <!-- Search -->
-          <div class="search-wrap no-print">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" placeholder="Engel/tanı ara..." oninput="renderList()" />
-          </div>
-
-          <!-- List -->
-          <div class="disability-list no-print" id="disabilityList"></div>
-
-          <!-- Print: selected list in left panel -->
-          <div class="print-show" id="printSelectedLeft">
-            <!-- filled by JS for print -->
-          </div>
+        <div class="ch">🏥 Branş ve Engel Seçimi <span class="cbadge no-print" id="branchLabel">MSK</span></div>
+        <div class="cb">
+          <div class="btabs no-print" id="branchTabs"></div>
+          <div class="swrap no-print"><span class="sico">🔍</span><input type="text" id="search" placeholder="Tanı / engel ara..." oninput="renderList()"/></div>
+          <div class="dlist no-print" id="dlist"></div>
         </div>
       </div>
     </div>
-
-    <!-- RIGHT: SELECTED + CALC + RESULT -->
-    <div class="right-panel">
-
-      <!-- SELECTED ITEMS -->
+    <!-- SAĞ: Seçili + Sonuç -->
+    <div>
       <div class="card">
-        <div class="card-header">
-          <span>✔</span> Seçili Engeller
-          <span class="badge" id="selCount">0</span>
-        </div>
-        <div class="card-body">
-          <div id="selectedList"><div class="selected-empty">Henüz engel seçilmedi.</div></div>
-        </div>
+        <div class="ch">✔ Seçili Engeller <span class="cbadge" id="selCount">0</span></div>
+        <div class="cb"><div id="selPanel"><div class="selempty">Henüz engel seçilmedi.</div></div></div>
       </div>
-
-      <!-- FORMULA INFO -->
-      <div class="formula-info no-print">
-        <strong>Balthazard Formülü:</strong><br>
-        Birleşik oran = <code>1 − (1−E₁)(1−E₂)…(1−Eₙ)</code><br>
-        Her yeni engel, kalan sağlam kapasiteden hesaplanır.
+      <div class="finfo no-print">
+        <strong>Dönüşüm zinciri:</strong> Her engel kendi anatomik düzeyinde belirlenir; parmak→el→üst eks.→tüm vücut, ayak parmağı→ayak→alt eks.→tüm vücut zinciriyle otomatik dönüştürülür.<br>
+        <strong>Balthazard:</strong> <code>1−(1−E₁)(1−E₂)…(1−Eₙ)</code> — her yeni engel kalan sağlam kapasiteden hesaplanır.
       </div>
-
-      <!-- STEPS -->
       <div class="card" id="stepsCard" style="display:none">
-        <div class="card-header"><span>📐</span> Hesaplama Adımları</div>
-        <div class="card-body">
-          <div class="formula-steps" id="formulaSteps"></div>
-        </div>
+        <div class="ch">📐 Balthazard Adımları</div>
+        <div class="cb"><div class="fsteps" id="fsteps"></div></div>
       </div>
-
-      <!-- RESULT -->
       <div class="card">
-        <div class="card-header"><span>📊</span> Sonuç</div>
-        <div class="card-body">
-          <div id="resultBox" class="result-box empty">
-            <div style="color:var(--muted); font-size:0.85rem; padding: 16px 0;">
-              Engel seçildiğinde otomatik hesaplanır.
-            </div>
-          </div>
+        <div class="ch">📊 Sonuç</div>
+        <div class="cb">
+          <div id="rbox" class="rbox empty"><div style="color:var(--muted);font-size:.84rem;padding:14px 0">Engel seçildiğinde otomatik hesaplanır.</div></div>
         </div>
       </div>
-
-      <!-- ACTIONS -->
-      <div class="btn-row no-print">
-        <button class="btn btn-primary" onclick="window.print()">🖨 Yazdır / PDF</button>
-        <button class="btn btn-outline" onclick="copyResult()">📋 Sonucu Kopyala</button>
-        <button class="btn btn-danger" onclick="clearAll()">🗑 Temizle</button>
+      <div class="brow no-print">
+        <button class="btn btn-p" onclick="window.print()">🖨 Yazdır / PDF</button>
+        <button class="btn btn-o" onclick="copyResult()">📋 Kopyala</button>
+        <button class="btn btn-d" onclick="clearAll()">🗑 Temizle</button>
       </div>
-
     </div>
   </div>
 </div>
-
 <script>
-// ═══════════════════════════════════════════════════════════════════
-// DATA — Disability items per branch
-// Oranlar: Türkiye Erişkinler İçin Engellilik Değerlendirmesi Hakkında
-// Yönetmelik (2022) referans tabloları esas alınmıştır.
-// ═══════════════════════════════════════════════════════════════════
-
-const BRANCHES = [
-  { id: 'ftr',      label: 'FTR',         full: 'Fiziksel Tıp ve Rehabilitasyon', color: '#1a5276' },
-  { id: 'neuro',    label: 'Nöroloji',    full: 'Nöroloji',                       color: '#6c3483' },
-  { id: 'psych',    label: 'Psikiyatri',  full: 'Psikiyatri',                     color: '#117a65' },
-  { id: 'cardio',   label: 'Dahiliye',    full: 'Kardiyoloji / Göğüs Hast. / Dahiliye', color: '#784212' },
-];
-
-const DATA = {
-  ftr: [
-    { cat: 'Omuz Eklemi', items: [
-      { id:'ftr_01', name:'Omuz – Tam ankiloz (fonksiyonel pozisyon)', sub:'Abduction 45°, fleksiyon 60°', pct:40 },
-      { id:'ftr_02', name:'Omuz – Tam ankiloz (fonksiyonel dışı pozisyon)', sub:'', pct:50 },
-      { id:'ftr_03', name:'Omuz – Ağır hareket kısıtlılığı', sub:'ROM %50\'nin altında', pct:25 },
-      { id:'ftr_04', name:'Omuz – Orta hareket kısıtlılığı', sub:'ROM %50-75 arası', pct:15 },
-      { id:'ftr_05', name:'Omuz – Hafif hareket kısıtlılığı', sub:'ROM %75\'in üstünde', pct:8 },
-      { id:'ftr_06', name:'Omuz – Rotator manşet yırtığı (opere)', sub:'Kalıcı kısıtlılık', pct:12 },
-    ]},
-    { cat: 'Dirsek Eklemi', items: [
-      { id:'ftr_07', name:'Dirsek – Tam ankiloz (fonksiyonel pozisyon)', sub:'90° fleksiyon', pct:40 },
-      { id:'ftr_08', name:'Dirsek – Tam ankiloz (ekstansiyon)', sub:'0° pozisyon', pct:50 },
-      { id:'ftr_09', name:'Dirsek – Ağır hareket kısıtlılığı', sub:'Fleksiyon <70°', pct:22 },
-      { id:'ftr_10', name:'Dirsek – Orta hareket kısıtlılığı', sub:'Fleksiyon 70-100°', pct:12 },
-    ]},
-    { cat: 'El Bileği & El', items: [
-      { id:'ftr_11', name:'El bileği – Tam ankiloz', sub:'', pct:30 },
-      { id:'ftr_12', name:'El bileği – Ağır kısıtlılık', sub:'ROM <25%', pct:18 },
-      { id:'ftr_13', name:'Başparmak (1. parmak) – Tam kayıp', sub:'', pct:20 },
-      { id:'ftr_14', name:'İşaret parmağı (2.) – Tam kayıp', sub:'', pct:12 },
-      { id:'ftr_15', name:'Orta parmak (3.) – Tam kayıp', sub:'', pct:10 },
-      { id:'ftr_16', name:'Yüzük parmağı (4.) – Tam kayıp', sub:'', pct:8 },
-      { id:'ftr_17', name:'Serçe parmak (5.) – Tam kayıp', sub:'', pct:6 },
-      { id:'ftr_18', name:'Tüm el kaybı', sub:'', pct:54 },
-    ]},
-    { cat: 'Kalça Eklemi', items: [
-      { id:'ftr_19', name:'Kalça – Tam ankiloz (fonksiyonel pozisyon)', sub:'20-30° fleksiyon', pct:40 },
-      { id:'ftr_20', name:'Kalça – Tam ankiloz (adduksiyon/ekst. pozisyon)', sub:'', pct:50 },
-      { id:'ftr_21', name:'Kalça – Ağır hareket kısıtlılığı', sub:'', pct:25 },
-      { id:'ftr_22', name:'Kalça – Orta hareket kısıtlılığı', sub:'', pct:15 },
-      { id:'ftr_23', name:'Total kalça protezi', sub:'Başarılı revizyonsuz', pct:20 },
-    ]},
-    { cat: 'Diz Eklemi', items: [
-      { id:'ftr_24', name:'Diz – Tam ankiloz (fonksiyonel pozisyon)', sub:'5-15° fleksiyon', pct:30 },
-      { id:'ftr_25', name:'Diz – Tam ankiloz (fleksiyon >30°)', sub:'', pct:40 },
-      { id:'ftr_26', name:'Diz – Ağır hareket kısıtlılığı', sub:'Fleksiyon <60°', pct:20 },
-      { id:'ftr_27', name:'Diz – Orta hareket kısıtlılığı', sub:'Fleksiyon 60-90°', pct:12 },
-      { id:'ftr_28', name:'Total diz protezi', sub:'Başarılı revizyonsuz', pct:18 },
-      { id:'ftr_29', name:'Ön çapraz bağ kopmaz (ameliyatsız)', sub:'Instabilite kalıcı', pct:10 },
-    ]},
-    { cat: 'Ayak & Ayak Bileği', items: [
-      { id:'ftr_30', name:'Ayak bileği – Tam ankiloz', sub:'', pct:25 },
-      { id:'ftr_31', name:'Ayak bileği – Ağır kısıtlılık', sub:'', pct:15 },
-      { id:'ftr_32', name:'Ayak başparmağı kaybı', sub:'', pct:8 },
-      { id:'ftr_33', name:'Tüm ayak parmakları kaybı', sub:'', pct:18 },
-      { id:'ftr_34', name:'Ayak yarısı amputasyonu (Lisfranc)', sub:'', pct:30 },
-    ]},
-    { cat: 'Ampütasyon – Üst Ekstremite', items: [
-      { id:'ftr_35', name:'Omuz dezartikülasyonu', sub:'', pct:60 },
-      { id:'ftr_36', name:'Kol amputasyonu (üst 1/3)', sub:'', pct:56 },
-      { id:'ftr_37', name:'Kol amputasyonu (orta-alt 1/3)', sub:'', pct:52 },
-      { id:'ftr_38', name:'Dirsek dezartikülasyonu', sub:'', pct:50 },
-      { id:'ftr_39', name:'Önkol amputasyonu (üst 1/3)', sub:'', pct:46 },
-      { id:'ftr_40', name:'Önkol amputasyonu (alt 1/3)', sub:'', pct:42 },
-      { id:'ftr_41', name:'El bileği dezartikülasyonu', sub:'', pct:40 },
-    ]},
-    { cat: 'Ampütasyon – Alt Ekstremite', items: [
-      { id:'ftr_42', name:'Hemipelvektomi', sub:'', pct:70 },
-      { id:'ftr_43', name:'Kalça dezartikülasyonu', sub:'', pct:65 },
-      { id:'ftr_44', name:'Uyluk amputasyonu (üst 1/3)', sub:'', pct:60 },
-      { id:'ftr_45', name:'Uyluk amputasyonu (orta-alt 1/3)', sub:'', pct:55 },
-      { id:'ftr_46', name:'Diz dezartikülasyonu', sub:'', pct:50 },
-      { id:'ftr_47', name:'Bacak amputasyonu (üst 1/3)', sub:'', pct:45 },
-      { id:'ftr_48', name:'Bacak amputasyonu (alt 1/3)', sub:'', pct:40 },
-      { id:'ftr_49', name:'Ayak bileği dezartikülasyonu (Syme)', sub:'', pct:35 },
-    ]},
-    { cat: 'Omurga', items: [
-      { id:'ftr_50', name:'Servikal – Tam ankiloz', sub:'', pct:35 },
-      { id:'ftr_51', name:'Servikal – Ağır kısıtlılık', sub:'ROM %50 altında', pct:20 },
-      { id:'ftr_52', name:'Servikal – Orta kısıtlılık', sub:'ROM %50-75', pct:12 },
-      { id:'ftr_53', name:'Lomber – Tam ankiloz', sub:'', pct:40 },
-      { id:'ftr_54', name:'Lomber – Ağır kısıtlılık', sub:'ROM %50 altında', pct:22 },
-      { id:'ftr_55', name:'Lomber – Orta kısıtlılık', sub:'ROM %50-75', pct:14 },
-      { id:'ftr_56', name:'Kifoz/Skolyoz (ağır, Cobb >60°)', sub:'', pct:30 },
-      { id:'ftr_57', name:'Kifoz/Skolyoz (orta, Cobb 40-60°)', sub:'', pct:18 },
-    ]},
-    { cat: 'Romatizmal Hastalıklar', items: [
-      { id:'ftr_58', name:'Romatoid artrit – Remisyonda', sub:'Minimal fonksiyonel kayıp', pct:10 },
-      { id:'ftr_59', name:'Romatoid artrit – Aktif, orta etkilenim', sub:'', pct:25 },
-      { id:'ftr_60', name:'Romatoid artrit – Ağır, poliartrit', sub:'', pct:45 },
-      { id:'ftr_61', name:'Ankilozan spondilit – Hafif', sub:'', pct:12 },
-      { id:'ftr_62', name:'Ankilozan spondilit – Orta', sub:'Omurga + kalça', pct:28 },
-      { id:'ftr_63', name:'Ankilozan spondilit – Ağır', sub:'Kambur postür, tam kısıtlılık', pct:50 },
-      { id:'ftr_64', name:'Fibromiyalji sendromu', sub:'Tanı kılavuzuna uygun', pct:10 },
-    ]},
-    { cat: 'Osteoporoz & Kırıklar', items: [
-      { id:'ftr_65', name:'Vertebra kırığı (kompresyon, kalıcı kısıtlılık)', sub:'', pct:20 },
-      { id:'ftr_66', name:'Femur kırığı (kaynamama veya kötü kaynama)', sub:'', pct:25 },
-    ]},
-  ],
-
-  neuro: [
-    { cat: 'İnme & Hemipleji', items: [
-      { id:'neu_01', name:'Hemipleji – Tam, bağımlı', sub:'Barthel <40', pct:90 },
-      { id:'neu_02', name:'Hemipleji – Ağır, ileri bağımlılık', sub:'Barthel 40-60', pct:70 },
-      { id:'neu_03', name:'Hemipleji – Orta, kısmen bağımsız', sub:'Barthel 60-80', pct:50 },
-      { id:'neu_04', name:'Hemiparezi – Hafif', sub:'Barthel >80', pct:25 },
-      { id:'neu_05', name:'Afazi – Tam motor afazi (Broca)', sub:'', pct:50 },
-      { id:'neu_06', name:'Afazi – Hafif, iletişim kurabiliyor', sub:'', pct:20 },
-    ]},
-    { cat: 'Omurilik Hasarı', items: [
-      { id:'neu_07', name:'Tetrapleji – Tam (AIS A/B, C4 ve üstü)', sub:'Ventilatör bağımlı olabilir', pct:100 },
-      { id:'neu_08', name:'Tetrapleji – Tam (AIS A/B, C5-C8)', sub:'El fonksiyonu yok/minimal', pct:90 },
-      { id:'neu_09', name:'Tetrapleji – Eksik (AIS C/D)', sub:'', pct:70 },
-      { id:'neu_10', name:'Parapleji – Tam (AIS A/B, T1-T10)', sub:'', pct:70 },
-      { id:'neu_11', name:'Parapleji – Tam (T11-L1)', sub:'', pct:65 },
-      { id:'neu_12', name:'Parapleji – Eksik (AIS C/D)', sub:'', pct:45 },
-      { id:'neu_13', name:'Kauda equina sendromu', sub:'Sfinkter bozukluğu dahil', pct:50 },
-    ]},
-    { cat: 'Periferik Sinir', items: [
-      { id:'neu_14', name:'Brakiyal pleksus – Tam kesinti', sub:'', pct:60 },
-      { id:'neu_15', name:'Brakiyal pleksus – Üst truncus (Erb)', sub:'', pct:35 },
-      { id:'neu_16', name:'N. radialis – Tam felci', sub:'El düşmesi', pct:30 },
-      { id:'neu_17', name:'N. medianus – Tam felci', sub:'', pct:35 },
-      { id:'neu_18', name:'N. ulnaris – Tam felci', sub:'', pct:25 },
-      { id:'neu_19', name:'N. ischiadicus – Tam felci', sub:'', pct:45 },
-      { id:'neu_20', name:'N. peroneus communis – Tam felci', sub:'Düşük ayak', pct:25 },
-      { id:'neu_21', name:'N. femoralis – Tam felci', sub:'', pct:35 },
-    ]},
-    { cat: 'Epilepsi', items: [
-      { id:'neu_22', name:'Epilepsi – İyi kontrol altında (nöbet yok, ilaçsız)', sub:'', pct:0 },
-      { id:'neu_23', name:'Epilepsi – İlaçla tam kontrol', sub:'Sürücü belgesi kısıtı', pct:10 },
-      { id:'neu_24', name:'Epilepsi – Kısmi kontrol (ara sıra nöbet)', sub:'Yılda <4 nöbet', pct:20 },
-      { id:'neu_25', name:'Epilepsi – Yetersiz kontrol', sub:'Aylık nöbet', pct:40 },
-      { id:'neu_26', name:'Epilepsi – Çok sık nöbet / status epilepticus', sub:'', pct:60 },
-    ]},
-    { cat: 'Hareket Bozuklukları', items: [
-      { id:'neu_27', name:'Parkinson – Evre 1 (Hoehn & Yahr)', sub:'Tek taraflı', pct:15 },
-      { id:'neu_28', name:'Parkinson – Evre 2', sub:'İki taraflı, denge normal', pct:25 },
-      { id:'neu_29', name:'Parkinson – Evre 3', sub:'Hafif postüral instabilite', pct:40 },
-      { id:'neu_30', name:'Parkinson – Evre 4', sub:'Ağır, yardıma ihtiyaç var', pct:60 },
-      { id:'neu_31', name:'Parkinson – Evre 5', sub:'Tekerlekli sandalye / yatak', pct:85 },
-      { id:'neu_32', name:'Esansiyel tremor – Orta', sub:'Yeme/yazı etkilenmiş', pct:15 },
-      { id:'neu_33', name:'Esansiyel tremor – Ağır', sub:'Günlük aktivite kısıtlı', pct:30 },
-      { id:'neu_34', name:'Distonya – Fokal (servikal)', sub:'', pct:20 },
-      { id:'neu_35', name:'Distonya – Jeneralize', sub:'', pct:50 },
-    ]},
-    { cat: 'Nörodejeneral Hastalıklar', items: [
-      { id:'neu_36', name:'Multiple skleroz – EDSS 3-4', sub:'Hafif-orta engellilik', pct:30 },
-      { id:'neu_37', name:'Multiple skleroz – EDSS 5-6', sub:'Yürüyüş yardımı gerekli', pct:50 },
-      { id:'neu_38', name:'Multiple skleroz – EDSS 7-8', sub:'Tekerlekli sandalye', pct:70 },
-      { id:'neu_39', name:'ALS – Erken evre', sub:'Güç kaybı var, bağımsız', pct:40 },
-      { id:'neu_40', name:'ALS – Orta evre', sub:'Yürüyüş ve konuşma etkilenmiş', pct:70 },
-      { id:'neu_41', name:'Alzheimer / Demans – Hafif (CDR 1)', sub:'', pct:30 },
-      { id:'neu_42', name:'Alzheimer / Demans – Orta (CDR 2)', sub:'', pct:60 },
-      { id:'neu_43', name:'Alzheimer / Demans – Ağır (CDR 3)', sub:'', pct:90 },
-    ]},
-    { cat: 'Serebellar & Diğer', items: [
-      { id:'neu_44', name:'Serebellar ataksi – Hafif', sub:'Bağımsız yürüyüş', pct:20 },
-      { id:'neu_45', name:'Serebellar ataksi – Orta', sub:'Yardımcı cihaz gerekli', pct:40 },
-      { id:'neu_46', name:'Serebellar ataksi – Ağır', sub:'Tekerlekli sandalye', pct:65 },
-      { id:'neu_47', name:'Myastenia gravis – Okülomotor', sub:'Ptozis, diplopi', pct:20 },
-      { id:'neu_48', name:'Myastenia gravis – Jeneralize', sub:'', pct:45 },
-      { id:'neu_49', name:'Migren – Kronik, ilaç dirençli', sub:'15+ gün/ay', pct:20 },
-      { id:'neu_50', name:'Nöropati – Ağır periferik polinöropati', sub:'', pct:30 },
-    ]},
-  ],
-
-  psych: [
-    { cat: 'Psikotik Bozukluklar', items: [
-      { id:'psy_01', name:'Şizofreni – Tam remisyon, çalışabiliyor', sub:'GAF >70', pct:20 },
-      { id:'psy_02', name:'Şizofreni – Kısmi remisyon, kısıtlı çalışma', sub:'GAF 50-70', pct:40 },
-      { id:'psy_03', name:'Şizofreni – Yetersiz remisyon, destekli yaşam', sub:'GAF 30-50', pct:60 },
-      { id:'psy_04', name:'Şizofreni – Ağır, bağımlı bakım', sub:'GAF <30', pct:80 },
-      { id:'psy_05', name:'Schizoaffektif bozukluk – Orta', sub:'', pct:40 },
-      { id:'psy_06', name:'Schizoaffektif bozukluk – Ağır', sub:'', pct:60 },
-      { id:'psy_07', name:'Kronik sanrısal bozukluk', sub:'', pct:35 },
-    ]},
-    { cat: 'Duygudurum Bozuklukları', items: [
-      { id:'psy_08', name:'Bipolar bozukluk Tip I – Remisyon', sub:'İlaçla stabil', pct:20 },
-      { id:'psy_09', name:'Bipolar bozukluk Tip I – Kısmi remisyon', sub:'Sık epizodlar', pct:40 },
-      { id:'psy_10', name:'Bipolar bozukluk Tip I – Yetersiz kontrol', sub:'', pct:60 },
-      { id:'psy_11', name:'Majör depresif bozukluk – Tek epizod, remisyon', sub:'', pct:10 },
-      { id:'psy_12', name:'Majör depresif bozukluk – Rekürran, kısmi remisyon', sub:'', pct:25 },
-      { id:'psy_13', name:'Majör depresif bozukluk – Tedaviye dirençli', sub:'', pct:45 },
-      { id:'psy_14', name:'Persistan depresif bozukluk (distimi)', sub:'', pct:15 },
-    ]},
-    { cat: 'Anksiyete & OKB', items: [
-      { id:'psy_15', name:'OKB – Hafif (ilaçla kontrol)', sub:'GAF >60', pct:15 },
-      { id:'psy_16', name:'OKB – Orta', sub:'GAF 45-60', pct:30 },
-      { id:'psy_17', name:'OKB – Ağır, tedaviye dirençli', sub:'GAF <45', pct:50 },
-      { id:'psy_18', name:'Panik bozukluk – Agorafobisiz, kontrol altında', sub:'', pct:10 },
-      { id:'psy_19', name:'Panik bozukluk – Agorafobiyle, kısıtlı', sub:'', pct:25 },
-      { id:'psy_20', name:'Sosyal anksiyete bozukluğu – Ağır', sub:'', pct:20 },
-      { id:'psy_21', name:'Yaygın anksiyete bozukluğu – Kronik, dirençli', sub:'', pct:25 },
-      { id:'psy_22', name:'TSSB – Orta', sub:'', pct:30 },
-      { id:'psy_23', name:'TSSB – Ağır, kompleks', sub:'', pct:50 },
-    ]},
-    { cat: 'Kişilik & Dissosiyatif', items: [
-      { id:'psy_24', name:'Borderline kişilik bozukluğu – Orta', sub:'', pct:25 },
-      { id:'psy_25', name:'Borderline kişilik bozukluğu – Ağır', sub:'', pct:45 },
-      { id:'psy_26', name:'Dissosiyatif kimlik bozukluğu', sub:'', pct:50 },
-    ]},
-    { cat: 'Madde Kullanım Bozuklukları', items: [
-      { id:'psy_27', name:'Alkol kullanım bozukluğu – Remisyon', sub:'', pct:10 },
-      { id:'psy_28', name:'Alkol kullanım bozukluğu – Aktif, komplikasyonlu', sub:'', pct:35 },
-      { id:'psy_29', name:'Opioid bağımlılığı – Tedavide (MAT)', sub:'', pct:20 },
-      { id:'psy_30', name:'Madde bağımlılığı – Ağır, sosyal işlev bozuk', sub:'', pct:45 },
-    ]},
-    { cat: 'Nörogelişimsel Bozukluklar', items: [
-      { id:'psy_31', name:'Hafif düzeyde zekâ engeli (IQ 50-69)', sub:'', pct:40 },
-      { id:'psy_32', name:'Orta düzeyde zekâ engeli (IQ 35-49)', sub:'', pct:60 },
-      { id:'psy_33', name:'Ağır düzeyde zekâ engeli (IQ 20-34)', sub:'', pct:80 },
-      { id:'psy_34', name:'DEHB – Erişkin, ağır, işlevsellik bozuk', sub:'', pct:20 },
-      { id:'psy_35', name:'Otizm spektrum bozukluğu – Düzey 2', sub:'', pct:50 },
-      { id:'psy_36', name:'Otizm spektrum bozukluğu – Düzey 3', sub:'', pct:80 },
-    ]},
-  ],
-
-  cardio: [
-    { cat: 'Kalp Yetmezliği', items: [
-      { id:'car_01', name:'Kalp yetmezliği – NYHA I (semptom yok)', sub:'EF <%40', pct:10 },
-      { id:'car_02', name:'Kalp yetmezliği – NYHA II', sub:'Orta efor ile semptom', pct:25 },
-      { id:'car_03', name:'Kalp yetmezliği – NYHA III', sub:'Hafif efor ile semptom', pct:50 },
-      { id:'car_04', name:'Kalp yetmezliği – NYHA IV', sub:'İstirahatte semptom, bağımlı', pct:75 },
-    ]},
-    { cat: 'Koroner Arter Hastalığı', items: [
-      { id:'car_05', name:'Stabil angina – İlaçla kontrol, asemptomatik', sub:'', pct:10 },
-      { id:'car_06', name:'Stabil angina – Orta, eforla semptom', sub:'', pct:25 },
-      { id:'car_07', name:'MI sonrası, EF >%50, asemptomatik', sub:'', pct:15 },
-      { id:'car_08', name:'MI sonrası, EF %35-50', sub:'', pct:30 },
-      { id:'car_09', name:'MI sonrası, EF <%35', sub:'', pct:50 },
-    ]},
-    { cat: 'Kapak Hastalıkları', items: [
-      { id:'car_10', name:'Aort stenozu – Orta', sub:'Cerrahi sonrası stabil', pct:20 },
-      { id:'car_11', name:'Aort stenozu – Ağır', sub:'Operabl, bekliyor', pct:45 },
-      { id:'car_12', name:'Mitral kapak replasmanı – İyi fonksiyon', sub:'', pct:20 },
-      { id:'car_13', name:'Kapak replasmanı – Antikoagülan bağımlı', sub:'', pct:25 },
-    ]},
-    { cat: 'Aritmiler', items: [
-      { id:'car_14', name:'Kalıcı pacemaker – Tam bağımlı', sub:'', pct:30 },
-      { id:'car_15', name:'Kalıcı pacemaker – Kısmen bağımlı', sub:'', pct:20 },
-      { id:'car_16', name:'ICD implantasyonu', sub:'', pct:25 },
-      { id:'car_17', name:'Atrial fibrilasyon – İlaç gereksinimi, kısıtlı', sub:'', pct:15 },
-    ]},
-    { cat: 'KOAH & Solunum', items: [
-      { id:'car_18', name:'KOAH – Hafif (GOLD I, FEV1 >%80)', sub:'', pct:10 },
-      { id:'car_19', name:'KOAH – Orta (GOLD II, FEV1 %50-80)', sub:'', pct:25 },
-      { id:'car_20', name:'KOAH – Ağır (GOLD III, FEV1 %30-50)', sub:'', pct:45 },
-      { id:'car_21', name:'KOAH – Çok ağır (GOLD IV, FEV1 <%30)', sub:'Uzun dönem O2 tedavisi', pct:65 },
-      { id:'car_22', name:'Astım – İyi kontrol altında', sub:'', pct:5 },
-      { id:'car_23', name:'Astım – Kısmi kontrol, sık atak', sub:'', pct:20 },
-      { id:'car_24', name:'Astım – Ağır, ilaç dirençli', sub:'', pct:40 },
-      { id:'car_25', name:'Pulmoner hipertansiyon – WHO Sınıf II', sub:'', pct:30 },
-      { id:'car_26', name:'Pulmoner hipertansiyon – WHO Sınıf III-IV', sub:'', pct:60 },
-      { id:'car_27', name:'Koreliktif pnömonektomi (akciğer çıkartılması)', sub:'', pct:40 },
-    ]},
-    { cat: 'Böbrek Hastalıkları', items: [
-      { id:'car_28', name:'KBH Evre 3 (GFR 30-59)', sub:'İlaç tedavisinde', pct:15 },
-      { id:'car_29', name:'KBH Evre 4 (GFR 15-29)', sub:'', pct:30 },
-      { id:'car_30', name:'KBH Evre 5 – Diyalize girmiyor', sub:'', pct:50 },
-      { id:'car_31', name:'Son dönem böbrek yetmezliği – Hemodiyaliz', sub:'3x/hafta', pct:65 },
-      { id:'car_32', name:'Son dönem böbrek yetmezliği – PD', sub:'', pct:60 },
-      { id:'car_33', name:'Böbrek transplantasyonu – Stabil', sub:'İmmünosüpresif bağımlı', pct:25 },
-    ]},
-    { cat: 'Karaciğer Hastalıkları', items: [
-      { id:'car_34', name:'Karaciğer sirozu – Child-Pugh A', sub:'', pct:20 },
-      { id:'car_35', name:'Karaciğer sirozu – Child-Pugh B', sub:'', pct:40 },
-      { id:'car_36', name:'Karaciğer sirozu – Child-Pugh C', sub:'', pct:65 },
-      { id:'car_37', name:'Karaciğer transplantasyonu – Stabil', sub:'', pct:25 },
-    ]},
-    { cat: 'Endokrin & Metabolik', items: [
-      { id:'car_38', name:'Tip 1 Diyabet – İyi kontrol, komplikasyonsuz', sub:'', pct:15 },
-      { id:'car_39', name:'Tip 2 Diyabet – Orta kontrol', sub:'', pct:15 },
-      { id:'car_40', name:'Diyabet – Periferik nöropati + retinopati', sub:'', pct:35 },
-      { id:'car_41', name:'Diyabet – Nefropati (makroalbüminüri)', sub:'', pct:40 },
-      { id:'car_42', name:'Hipotiroidi – İlaçla tam kontrol', sub:'', pct:5 },
-      { id:'car_43', name:'Addison hastalığı – Steroid bağımlı', sub:'', pct:25 },
-      { id:'car_44', name:'Cushing sendromu – Aktif', sub:'', pct:35 },
-    ]},
-    { cat: 'Hematolojik & Onkoloji', items: [
-      { id:'car_45', name:'Kronik lösemi – Remisyon, çalışabiliyor', sub:'', pct:25 },
-      { id:'car_46', name:'Hemofili A/B – Orta ağırlıklı', sub:'', pct:30 },
-      { id:'car_47', name:'Orak hücre anemisi – Orta', sub:'', pct:30 },
-      { id:'car_48', name:'Talasemi majör – Transfüzyon bağımlı', sub:'', pct:50 },
-      { id:'car_49', name:'Kanser – Remisyon, minimal kalıntı', sub:'', pct:15 },
-      { id:'car_50', name:'Kanser – Aktif tedavi, kısmi remisyon', sub:'', pct:40 },
-    ]},
-  ],
+// ═══════════════════════════════════════════════════
+// DÖNÜŞÜM ZİNCİRLERİ
+// ═══════════════════════════════════════════════════
+const RC = {
+  finger_thumb:  { title:'Başparmak %', steps:[{l:'Başparmak',f:1},{l:'El',f:.40},{l:'Üst Eks.',f:.36},{l:'T.V.E.',f:.216}] },
+  finger_index:  { title:'İşaret P. %', steps:[{l:'İşaret P.',f:1},{l:'El',f:.20},{l:'Üst Eks.',f:.18},{l:'T.V.E.',f:.108}] },
+  finger_middle: { title:'Orta P. %',   steps:[{l:'Orta P.',f:1},{l:'El',f:.20},{l:'Üst Eks.',f:.18},{l:'T.V.E.',f:.108}] },
+  finger_ring:   { title:'Yüzük P. %',  steps:[{l:'Yüzük P.',f:1},{l:'El',f:.10},{l:'Üst Eks.',f:.09},{l:'T.V.E.',f:.054}] },
+  finger_little: { title:'Serçe P. %',  steps:[{l:'Serçe P.',f:1},{l:'El',f:.10},{l:'Üst Eks.',f:.09},{l:'T.V.E.',f:.054}] },
+  hand:          { title:'El %',        steps:[{l:'El',f:1},{l:'Üst Eks.',f:.90},{l:'T.V.E.',f:.54}] },
+  upper_ext:     { title:'Üst Eks. %',  steps:[{l:'Üst Eks.',f:1},{l:'T.V.E.',f:.60}] },
+  toe_great:     { title:'Büyük P. %',  steps:[{l:'Büyük P.',f:1},{l:'Ayak',f:.14},{l:'Alt Eks.',f:.098},{l:'T.V.E.',f:.049}] },
+  toe_second:    { title:'2. Parmak %', steps:[{l:'2. P.',f:1},{l:'Ayak',f:.06},{l:'Alt Eks.',f:.042},{l:'T.V.E.',f:.021}] },
+  toe_other:     { title:'Parmak %',    steps:[{l:'Parmak',f:1},{l:'Ayak',f:.04},{l:'Alt Eks.',f:.028},{l:'T.V.E.',f:.014}] },
+  foot:          { title:'Ayak %',      steps:[{l:'Ayak',f:1},{l:'Alt Eks.',f:.70},{l:'T.V.E.',f:.35}] },
+  lower_ext:     { title:'Alt Eks. %',  steps:[{l:'Alt Eks.',f:1},{l:'T.V.E.',f:.50}] },
+  eye_mono:      { title:'Tek Göz %',   steps:[{l:'Göz',f:1},{l:'T.V.E.',f:.24}] },
+  whole:         { title:'T.V.E. %',    steps:[{l:'T.V.E.',f:1}] },
 };
 
-// ═══════════════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════════════
-let currentBranch = 'ftr';
-let selected = {}; // { id: { name, branch, pct } }
+function wpPct(rt, rp){
+  const c=RC[rt]||RC.whole;
+  return Math.round(rp*c.steps[c.steps.length-1].f);
+}
+function chainSteps(rt,rp){
+  const c=RC[rt]||RC.whole;
+  return c.steps.map(s=>({l:s.l,p:Math.round(rp*s.f)}));
+}
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// BRANŞLAR
+// ═══════════════════════════════════════════════════
+const BRANCHES=[
+  {id:'msk',    label:'Ortopedi/FTR', color:'#1a5276'},
+  {id:'neuro',  label:'Nöroloji',     color:'#6c3483'},
+  {id:'psych',  label:'Psikiyatri',   color:'#117a65'},
+  {id:'cardio', label:'Kardiyoloji',  color:'#922b21'},
+  {id:'pulmo',  label:'Göğüs Hast.',  color:'#1f618d'},
+  {id:'intern', label:'Dahiliye',     color:'#784212'},
+  {id:'ophthal',label:'Göz Hast.',    color:'#1e8449'},
+  {id:'ent',    label:'KBB',          color:'#6e2f8a'},
+  {id:'urology',label:'Üroloji',      color:'#0e6655'},
+  {id:'gynec',  label:'Kadın Hast.',  color:'#c0392b'},
+  {id:'derma',  label:'Dermatoloji',  color:'#a04000'},
+  {id:'hemato', label:'Hematoloji',   color:'#273746'},
+];
+
+// ═══════════════════════════════════════════════════
+// VERİ — tüm branşlar
+// rt=regionType, rp=default regionPct
+// ═══════════════════════════════════════════════════
+const DATA={
+msk:[
+  {cat:'Başparmak (El)',items:[
+    {id:'m01',name:'Başparmak – Tam kayıp (ampütasyon)',         sub:'Tüm başparmak',                       rt:'finger_thumb', rp:100},
+    {id:'m02',name:'Başparmak – IP + MP tam ankiloz',            sub:'Fonksiyonel olmayan pozisyon',        rt:'finger_thumb', rp:90},
+    {id:'m03',name:'Başparmak – IP ankiloz (fonksiyonel)',       sub:'~30° fleksiyon',                      rt:'finger_thumb', rp:50},
+    {id:'m04',name:'Başparmak – MP ankiloz (fonksiyonel)',       sub:'',                                    rt:'finger_thumb', rp:50},
+    {id:'m05',name:'Başparmak – Ağır ROM kısıtlılığı',          sub:'Tüm hareketler %50 altında',          rt:'finger_thumb', rp:60},
+    {id:'m06',name:'Başparmak – Orta ROM kısıtlılığı',          sub:'',                                    rt:'finger_thumb', rp:35},
+    {id:'m07',name:'Başparmak – Hafif ROM kısıtlılığı',         sub:'',                                    rt:'finger_thumb', rp:15},
+  ]},
+  {cat:'İşaret Parmağı (El)',items:[
+    {id:'m10',name:'İşaret parmağı – Tam kayıp',                 sub:'Ampütasyon',                          rt:'finger_index', rp:100},
+    {id:'m11',name:'İşaret parmağı – PIP + DIP tam ankiloz',    sub:'Fonksiyonel dışı',                    rt:'finger_index', rp:90},
+    {id:'m12',name:'İşaret parmağı – PIP ankiloz (fonk.)',      sub:'~40° fleksiyon',                      rt:'finger_index', rp:80},
+    {id:'m13',name:'İşaret parmağı – DIP ankiloz (fonk.)',      sub:'',                                    rt:'finger_index', rp:45},
+    {id:'m14',name:'İşaret parmağı – Ağır ROM kısıtlılığı',    sub:'',                                    rt:'finger_index', rp:60},
+    {id:'m15',name:'İşaret parmağı – Orta ROM kısıtlılığı',    sub:'',                                    rt:'finger_index', rp:35},
+    {id:'m16',name:'İşaret parmağı – Hafif ROM kısıtlılığı',   sub:'',                                    rt:'finger_index', rp:15},
+  ]},
+  {cat:'Orta Parmak (El)',items:[
+    {id:'m20',name:'Orta parmak – Tam kayıp',                    sub:'',                                    rt:'finger_middle', rp:100},
+    {id:'m21',name:'Orta parmak – PIP ankiloz (fonk.)',         sub:'',                                    rt:'finger_middle', rp:80},
+    {id:'m22',name:'Orta parmak – DIP ankiloz (fonk.)',         sub:'',                                    rt:'finger_middle', rp:45},
+    {id:'m23',name:'Orta parmak – Ağır ROM kısıtlılığı',       sub:'',                                    rt:'finger_middle', rp:60},
+    {id:'m24',name:'Orta parmak – Orta ROM kısıtlılığı',       sub:'',                                    rt:'finger_middle', rp:35},
+  ]},
+  {cat:'Yüzük Parmağı (El)',items:[
+    {id:'m30',name:'Yüzük parmağı – Tam kayıp',                  sub:'',                                    rt:'finger_ring', rp:100},
+    {id:'m31',name:'Yüzük parmağı – PIP ankiloz (fonk.)',       sub:'',                                    rt:'finger_ring', rp:80},
+    {id:'m32',name:'Yüzük parmağı – DIP ankiloz (fonk.)',       sub:'',                                    rt:'finger_ring', rp:45},
+    {id:'m33',name:'Yüzük parmağı – Ağır ROM kısıtlılığı',     sub:'',                                    rt:'finger_ring', rp:60},
+    {id:'m34',name:'Yüzük parmağı – Orta ROM kısıtlılığı',     sub:'',                                    rt:'finger_ring', rp:35},
+  ]},
+  {cat:'Serçe Parmak (El)',items:[
+    {id:'m40',name:'Serçe parmak – Tam kayıp',                   sub:'',                                    rt:'finger_little', rp:100},
+    {id:'m41',name:'Serçe parmak – PIP ankiloz (fonk.)',        sub:'',                                    rt:'finger_little', rp:80},
+    {id:'m42',name:'Serçe parmak – DIP ankiloz (fonk.)',        sub:'',                                    rt:'finger_little', rp:45},
+    {id:'m43',name:'Serçe parmak – Ağır ROM kısıtlılığı',      sub:'',                                    rt:'finger_little', rp:60},
+    {id:'m44',name:'Serçe parmak – Orta ROM kısıtlılığı',      sub:'',                                    rt:'finger_little', rp:35},
+  ]},
+  {cat:'El / Bilek',items:[
+    {id:'m50',name:'Tüm el kaybı (bilek dezartikülasyonu)',      sub:'',                                    rt:'hand', rp:100},
+    {id:'m51',name:'Bilek tam ankiloz (fonksiyonel pozisyon)',   sub:'Nötral pozisyon',                     rt:'hand', rp:55},
+    {id:'m52',name:'Bilek tam ankiloz (fonksiyonel dışı)',       sub:'Fleksiyon/ekstansiyon uçları',        rt:'hand', rp:75},
+    {id:'m53',name:'Bilek ağır ROM kısıtlılığı',                sub:'ROM %50 altında',                     rt:'hand', rp:40},
+    {id:'m54',name:'Bilek orta ROM kısıtlılığı',                sub:'ROM %50-75',                          rt:'hand', rp:25},
+    {id:'m55',name:'Bilek hafif ROM kısıtlılığı',               sub:'ROM %75 üstünde',                     rt:'hand', rp:12},
+    {id:'m56',name:'Ağır el kontraktürü',                       sub:'Tüm parmaklar etkilenmiş',            rt:'hand', rp:70},
+    {id:'m57',name:'Orta el kontraktürü',                       sub:'',                                    rt:'hand', rp:40},
+  ]},
+  {cat:'Üst Ekstremite – Omuz',items:[
+    {id:'m60',name:'Omuz tam ankiloz (fonksiyonel pozisyon)',    sub:'Abduction 45°, fleksiyon 60°',        rt:'upper_ext', rp:50},
+    {id:'m61',name:'Omuz tam ankiloz (fonksiyonel dışı)',       sub:'Adduksiyon/internal rotasyon',        rt:'upper_ext', rp:65},
+    {id:'m62',name:'Omuz ağır ROM kısıtlılığı',                sub:'ROM %50 altında',                     rt:'upper_ext', rp:30},
+    {id:'m63',name:'Omuz orta ROM kısıtlılığı',                sub:'ROM %50-75',                          rt:'upper_ext', rp:18},
+    {id:'m64',name:'Omuz hafif ROM kısıtlılığı',               sub:'ROM %75 üstünde',                     rt:'upper_ext', rp:8},
+    {id:'m65',name:'Total omuz protezi – stabil',               sub:'',                                    rt:'upper_ext', rp:20},
+  ]},
+  {cat:'Üst Ekstremite – Dirsek',items:[
+    {id:'m70',name:'Dirsek tam ankiloz (fonksiyonel, 90°)',     sub:'',                                    rt:'upper_ext', rp:45},
+    {id:'m71',name:'Dirsek tam ankiloz (ekstansiyon)',          sub:'0° pozisyon, fonksiyonel dışı',       rt:'upper_ext', rp:58},
+    {id:'m72',name:'Dirsek ağır ROM kısıtlılığı',              sub:'Fleksiyon <70°',                      rt:'upper_ext', rp:28},
+    {id:'m73',name:'Dirsek orta ROM kısıtlılığı',              sub:'Fleksiyon 70-100°',                   rt:'upper_ext', rp:16},
+  ]},
+  {cat:'Ampütasyon – Üst Ekstremite',items:[
+    {id:'m80',name:'Omuz dezartikülasyonu',                     sub:'Doğrudan TVE değeri',                 rt:'whole', rp:60},
+    {id:'m81',name:'Kol ampütasyonu – üst 1/3',                sub:'',                                    rt:'whole', rp:56},
+    {id:'m82',name:'Kol ampütasyonu – orta/alt 1/3',           sub:'',                                    rt:'whole', rp:52},
+    {id:'m83',name:'Dirsek dezartikülasyonu',                   sub:'',                                    rt:'whole', rp:50},
+    {id:'m84',name:'Önkol ampütasyonu – üst 1/3',              sub:'',                                    rt:'whole', rp:46},
+    {id:'m85',name:'Önkol ampütasyonu – alt 1/3',              sub:'',                                    rt:'whole', rp:42},
+  ]},
+  {cat:'Ayak Büyük Parmağı',items:[
+    {id:'m90',name:'Büyük parmak – tam kayıp (ampütasyon)',     sub:'',                                    rt:'toe_great', rp:100},
+    {id:'m91',name:'Büyük parmak – IP ankiloz',                 sub:'Fonksiyonel dışı',                    rt:'toe_great', rp:75},
+    {id:'m92',name:'Büyük parmak – IP ankiloz (fonk.)',        sub:'',                                    rt:'toe_great', rp:50},
+    {id:'m93',name:'Büyük parmak – ağır kısıtlılık',          sub:'',                                    rt:'toe_great', rp:60},
+    {id:'m94',name:'Büyük parmak – orta kısıtlılık',          sub:'',                                    rt:'toe_great', rp:35},
+  ]},
+  {cat:'2. Ayak Parmağı',items:[
+    {id:'m100',name:'2. ayak parmağı – tam kayıp',              sub:'',                                    rt:'toe_second', rp:100},
+    {id:'m101',name:'2. ayak parmağı – ankiloz',                sub:'',                                    rt:'toe_second', rp:70},
+    {id:'m102',name:'2. ayak parmağı – ağır kısıtlılık',       sub:'',                                    rt:'toe_second', rp:50},
+  ]},
+  {cat:'3-5. Ayak Parmakları',items:[
+    {id:'m110',name:'3., 4. veya 5. ayak parmağı – tam kayıp', sub:'Her parmak ayrı değerlendirin',       rt:'toe_other', rp:100},
+    {id:'m111',name:'3-5. parmak – ankiloz',                    sub:'',                                    rt:'toe_other', rp:70},
+    {id:'m112',name:'3-5. parmak – ağır kısıtlılık',           sub:'',                                    rt:'toe_other', rp:50},
+  ]},
+  {cat:'Ayak / Ayak Bileği',items:[
+    {id:'m120',name:'Ayak bileği tam ankiloz (fonk. pozisyon)', sub:'Nötral veya hafif plantar fleksiyon', rt:'foot', rp:50},
+    {id:'m121',name:'Ayak bileği tam ankiloz (fonk. dışı)',    sub:'Belirgin fleksiyon/ekstansiyon',       rt:'foot', rp:70},
+    {id:'m122',name:'Ayak bileği ağır ROM kısıtlılığı',        sub:'ROM %50 altında',                     rt:'foot', rp:35},
+    {id:'m123',name:'Ayak bileği orta ROM kısıtlılığı',        sub:'ROM %50-75',                          rt:'foot', rp:20},
+    {id:'m124',name:'Tüm ayak parmakları kaybı',               sub:'',                                    rt:'foot', rp:25},
+    {id:'m125',name:'Yarım ayak ampütasyonu (Lisfranc)',        sub:'',                                    rt:'foot', rp:55},
+  ]},
+  {cat:'Alt Ekstremite – Kalça',items:[
+    {id:'m130',name:'Kalça tam ankiloz (fonksiyonel pozisyon)', sub:'20-30° fleksiyon',                    rt:'lower_ext', rp:45},
+    {id:'m131',name:'Kalça tam ankiloz (fonksiyonel dışı)',    sub:'Adduksiyon / eksternal rotasyon',      rt:'lower_ext', rp:60},
+    {id:'m132',name:'Kalça ağır ROM kısıtlılığı',              sub:'ROM %50 altında',                     rt:'lower_ext', rp:28},
+    {id:'m133',name:'Kalça orta ROM kısıtlılığı',              sub:'',                                    rt:'lower_ext', rp:15},
+    {id:'m134',name:'Total kalça protezi – stabil',             sub:'',                                    rt:'lower_ext', rp:22},
+  ]},
+  {cat:'Alt Ekstremite – Diz',items:[
+    {id:'m140',name:'Diz tam ankiloz (fonksiyonel, 5-15°)',    sub:'',                                    rt:'lower_ext', rp:35},
+    {id:'m141',name:'Diz tam ankiloz (fleksiyon >30°)',         sub:'Fonksiyonel dışı',                    rt:'lower_ext', rp:50},
+    {id:'m142',name:'Diz ağır ROM kısıtlılığı',                sub:'Fleksiyon <60°',                      rt:'lower_ext', rp:22},
+    {id:'m143',name:'Diz orta ROM kısıtlılığı',                sub:'Fleksiyon 60-90°',                    rt:'lower_ext', rp:12},
+    {id:'m144',name:'Total diz protezi – stabil',               sub:'',                                    rt:'lower_ext', rp:18},
+    {id:'m145',name:'ACL kopmaz – kalıcı instabilite',          sub:'',                                    rt:'lower_ext', rp:10},
+  ]},
+  {cat:'Ampütasyon – Alt Ekstremite',items:[
+    {id:'m150',name:'Hemipelvektomi',                           sub:'Tablo 3.30 – TVE %65',                rt:'whole', rp:65},
+    {id:'m151',name:'Kalça dezartikülasyonu',                   sub:'AE %100 → TVE %50',                   rt:'whole', rp:50},
+    {id:'m152',name:'Diz üstü ampütasyon – proksimal',         sub:'AE %100 → TVE %50',                   rt:'whole', rp:50},
+    {id:'m153',name:'Diz üstü ampütasyon – orta/distal',       sub:'AE %95 → TVE %48',                    rt:'whole', rp:48},
+    {id:'m154',name:'Diz dezartikülasyonu',                     sub:'AE %90 → TVE %45',                    rt:'whole', rp:45},
+    {id:'m155',name:'Diz altı ampütasyon – proksimal',         sub:'AE %85 → TVE %43',                    rt:'whole', rp:43},
+    {id:'m156',name:'Diz altı ampütasyon – orta/distal',       sub:'AE %80 → TVE %40',                    rt:'whole', rp:40},
+    {id:'m157',name:'Ayak bileği dezartikülasyonu (Syme)',      sub:'AE %75 → TVE %38',                    rt:'whole', rp:38},
+    {id:'m158',name:'Chopart / Orta ayak ampütasyonu',         sub:'AE %62 → TVE %31',                    rt:'whole', rp:31},
+    {id:'m159',name:'Transmetatarsal ampütasyon',               sub:'AE %50 → TVE %25',                    rt:'whole', rp:25},
+  ]},
+  {cat:'Omurga – Servikal',items:[
+    {id:'m160',name:'Servikal tam ankiloz',                     sub:'',                                    rt:'whole', rp:35},
+    {id:'m161',name:'Servikal ağır ROM kısıtlılığı',           sub:'ROM %50 altında',                     rt:'whole', rp:20},
+    {id:'m162',name:'Servikal orta ROM kısıtlılığı',           sub:'ROM %50-75',                          rt:'whole', rp:12},
+    {id:'m163',name:'Servikal hafif ROM kısıtlılığı',          sub:'',                                    rt:'whole', rp:5},
+    {id:'m164',name:'Servikal disk hernisi – opere, kalıcı',   sub:'',                                    rt:'whole', rp:15},
+  ]},
+  {cat:'Omurga – Lomber/Torakal',items:[
+    {id:'m170',name:'Lomber tam ankiloz',                       sub:'',                                    rt:'whole', rp:40},
+    {id:'m171',name:'Lomber ağır ROM kısıtlılığı',             sub:'ROM %50 altında',                     rt:'whole', rp:22},
+    {id:'m172',name:'Lomber orta ROM kısıtlılığı',             sub:'',                                    rt:'whole', rp:14},
+    {id:'m173',name:'Lomber hafif ROM kısıtlılığı',            sub:'',                                    rt:'whole', rp:5},
+    {id:'m174',name:'Lomber disk hernisi – opere, kalıcı',     sub:'',                                    rt:'whole', rp:15},
+    {id:'m175',name:'Kifoz / Skolyoz (Cobb >60°)',             sub:'',                                    rt:'whole', rp:30},
+    {id:'m176',name:'Kifoz / Skolyoz (Cobb 40-60°)',           sub:'',                                    rt:'whole', rp:18},
+    {id:'m177',name:'Vertebra kırığı – kompresyon, kalıcı',    sub:'',                                    rt:'whole', rp:20},
+  ]},
+  {cat:'Romatizmal Hastalıklar',items:[
+    {id:'m180',name:'Romatoid artrit – remisyon',               sub:'Minimal fonksiyonel kayıp',           rt:'whole', rp:10},
+    {id:'m181',name:'Romatoid artrit – aktif, orta',            sub:'',                                    rt:'whole', rp:25},
+    {id:'m182',name:'Romatoid artrit – ağır, poliartrit',       sub:'',                                    rt:'whole', rp:45},
+    {id:'m183',name:'Ankilozan spondilit – hafif',              sub:'',                                    rt:'whole', rp:12},
+    {id:'m184',name:'Ankilozan spondilit – orta',               sub:'Omurga + kalça etkilenmiş',           rt:'whole', rp:28},
+    {id:'m185',name:'Ankilozan spondilit – ağır',               sub:'Kambur postür, tam kısıtlılık',       rt:'whole', rp:50},
+    {id:'m186',name:'Sistemik lupus eritematozus – orta',       sub:'Organ tutulumu yok/minimal',          rt:'whole', rp:20},
+    {id:'m187',name:'Sistemik lupus eritematozus – ağır',       sub:'Organ tutulumu mevcut',               rt:'whole', rp:40},
+    {id:'m188',name:'Fibromiyalji sendromu',                    sub:'Tanı kılavuzuna uygun',               rt:'whole', rp:10},
+    {id:'m189',name:'Psöriatik artrit – orta',                  sub:'',                                    rt:'whole', rp:20},
+    {id:'m190',name:'Psöriatik artrit – ağır',                  sub:'',                                    rt:'whole', rp:40},
+  ]},
+],
+
+neuro:[
+  {cat:'İnme & Hemipleji/Parezi',items:[
+    {id:'n01',name:'Hemipleji – tam, bakıma bağımlı',           sub:'Barthel <40',                         rt:'whole', rp:90},
+    {id:'n02',name:'Hemipleji – ağır, ileri bağımlılık',        sub:'Barthel 40-60',                       rt:'whole', rp:70},
+    {id:'n03',name:'Hemipleji – orta, kısmen bağımsız',         sub:'Barthel 60-80',                       rt:'whole', rp:50},
+    {id:'n04',name:'Hemiparezi – hafif',                         sub:'Barthel >80',                         rt:'whole', rp:25},
+    {id:'n05',name:'Afazi – tam motor afazi (Broca)',            sub:'İletişim yok',                        rt:'whole', rp:50},
+    {id:'n06',name:'Afazi – hafif, iletişim kurabiliyor',        sub:'',                                    rt:'whole', rp:20},
+    {id:'n07',name:'Monopleji – kol (üst ekstremite)',           sub:'',                                    rt:'upper_ext', rp:100},
+    {id:'n08',name:'Monopleji – bacak (alt ekstremite)',         sub:'',                                    rt:'lower_ext', rp:100},
+  ]},
+  {cat:'Omurilik Hasarı',items:[
+    {id:'n10',name:'Tetrapleji – tam (AIS A/B, C4 ve üstü)',    sub:'Ventilatör gerekebilir',              rt:'whole', rp:100},
+    {id:'n11',name:'Tetrapleji – tam (AIS A/B, C5-C8)',         sub:'El fonksiyonu yok/minimal',           rt:'whole', rp:90},
+    {id:'n12',name:'Tetrapleji – eksik (AIS C/D)',              sub:'',                                    rt:'whole', rp:70},
+    {id:'n13',name:'Parapleji – tam (T1-T10)',                   sub:'',                                    rt:'whole', rp:70},
+    {id:'n14',name:'Parapleji – tam (T11-L1)',                   sub:'',                                    rt:'whole', rp:65},
+    {id:'n15',name:'Parapleji – eksik (AIS C/D)',               sub:'',                                    rt:'whole', rp:45},
+    {id:'n16',name:'Kauda equina sendromu',                      sub:'Sfinkter bozukluğu dahil',            rt:'whole', rp:50},
+  ]},
+  {cat:'Periferik Sinir',items:[
+    {id:'n20',name:'Brakiyal pleksus – tam kesinti',             sub:'',                                    rt:'upper_ext', rp:100},
+    {id:'n21',name:'Brakiyal pleksus – üst truncus (Erb palsy)',sub:'',                                    rt:'upper_ext', rp:55},
+    {id:'n22',name:'N. radialis – tam felci (el düşmesi)',       sub:'',                                    rt:'upper_ext', rp:45},
+    {id:'n23',name:'N. medianus – tam felci',                    sub:'',                                    rt:'upper_ext', rp:50},
+    {id:'n24',name:'N. ulnaris – tam felci',                     sub:'',                                    rt:'upper_ext', rp:40},
+    {id:'n25',name:'N. ischiadicus – tam felci',                 sub:'',                                    rt:'lower_ext', rp:100},
+    {id:'n26',name:'N. peroneus communis – tam felci',           sub:'Düşük ayak',                          rt:'lower_ext', rp:60},
+    {id:'n27',name:'N. femoralis – tam felci',                   sub:'',                                    rt:'lower_ext', rp:80},
+    {id:'n28',name:'N. tibialis – tam felci',                    sub:'',                                    rt:'lower_ext', rp:40},
+  ]},
+  {cat:'Epilepsi',items:[
+    {id:'n30',name:'Epilepsi – ilaçla tam kontrol',              sub:'Sürücü belgesi kısıtı',               rt:'whole', rp:10},
+    {id:'n31',name:'Epilepsi – kısmi kontrol (yılda <4 nöbet)', sub:'',                                    rt:'whole', rp:20},
+    {id:'n32',name:'Epilepsi – yetersiz kontrol (aylık nöbet)', sub:'',                                    rt:'whole', rp:40},
+    {id:'n33',name:'Epilepsi – çok sık / status epilepticus',   sub:'',                                    rt:'whole', rp:60},
+  ]},
+  {cat:'Parkinson & Hareket Bozuklukları',items:[
+    {id:'n40',name:'Parkinson – Hoehn & Yahr Evre 1',           sub:'Tek taraflı',                         rt:'whole', rp:15},
+    {id:'n41',name:'Parkinson – Evre 2',                         sub:'İki taraflı, denge normal',           rt:'whole', rp:25},
+    {id:'n42',name:'Parkinson – Evre 3',                         sub:'Hafif postüral instabilite',          rt:'whole', rp:40},
+    {id:'n43',name:'Parkinson – Evre 4',                         sub:'Ağır, yardıma ihtiyaç var',           rt:'whole', rp:60},
+    {id:'n44',name:'Parkinson – Evre 5',                         sub:'Tekerlekli sandalye / yatak',         rt:'whole', rp:85},
+    {id:'n45',name:'Esansiyel tremor – orta',                    sub:'Yeme/yazı etkilenmiş',                rt:'whole', rp:15},
+    {id:'n46',name:'Esansiyel tremor – ağır',                    sub:'Günlük aktivite kısıtlı',             rt:'whole', rp:30},
+    {id:'n47',name:'Distonya – fokal (servikal)',                sub:'',                                    rt:'whole', rp:20},
+    {id:'n48',name:'Distonya – jeneralize',                      sub:'',                                    rt:'whole', rp:50},
+  ]},
+  {cat:'Nörodejeneral & Demans',items:[
+    {id:'n50',name:'Multiple skleroz – EDSS 3-4',               sub:'Hafif-orta engellilik',                rt:'whole', rp:30},
+    {id:'n51',name:'Multiple skleroz – EDSS 5-6',               sub:'Yürüyüş yardımı gerekli',             rt:'whole', rp:50},
+    {id:'n52',name:'Multiple skleroz – EDSS 7-8',               sub:'Tekerlekli sandalye',                  rt:'whole', rp:70},
+    {id:'n53',name:'ALS – erken evre',                           sub:'Güç kaybı var, bağımsız',             rt:'whole', rp:40},
+    {id:'n54',name:'ALS – orta evre',                            sub:'Yürüyüş ve konuşma etkilenmiş',       rt:'whole', rp:70},
+    {id:'n55',name:'Alzheimer / Demans – hafif (CDR 1)',        sub:'',                                    rt:'whole', rp:30},
+    {id:'n56',name:'Alzheimer / Demans – orta (CDR 2)',         sub:'',                                    rt:'whole', rp:60},
+    {id:'n57',name:'Alzheimer / Demans – ağır (CDR 3)',         sub:'',                                    rt:'whole', rp:90},
+    {id:'n58',name:'Serebellar ataksi – hafif',                  sub:'Bağımsız yürüyüş',                    rt:'whole', rp:20},
+    {id:'n59',name:'Serebellar ataksi – orta',                   sub:'Yardımcı cihaz gerekli',               rt:'whole', rp:40},
+    {id:'n60',name:'Serebellar ataksi – ağır',                   sub:'Tekerlekli sandalye',                  rt:'whole', rp:65},
+  ]},
+  {cat:'Nöromüsküler & Diğer',items:[
+    {id:'n70',name:'Myastenia gravis – okülomotor',              sub:'Ptozis, diplopi',                     rt:'whole', rp:20},
+    {id:'n71',name:'Myastenia gravis – jeneralize',              sub:'',                                    rt:'whole', rp:45},
+    {id:'n72',name:'Migren – kronik, ilaç dirençli',             sub:'15+ gün/ay',                          rt:'whole', rp:20},
+    {id:'n73',name:'Ağır periferik polinöropati',               sub:'',                                    rt:'whole', rp:30},
+    {id:'n74',name:'Spinal musküler atrofi – tip 3',             sub:'',                                    rt:'whole', rp:40},
+    {id:'n75',name:'Herediter spastik paraparezi',               sub:'',                                    rt:'whole', rp:35},
+    {id:'n76',name:'Hidrosefali – şantlı, stabil',              sub:'',                                    rt:'whole', rp:20},
+  ]},
+],
+
+psych:[
+  {cat:'Psikotik Bozukluklar',items:[
+    {id:'p01',name:'Şizofreni – tam remisyon, çalışabiliyor',   sub:'GAF >70',                             rt:'whole', rp:20},
+    {id:'p02',name:'Şizofreni – kısmi remisyon',                sub:'GAF 50-70',                           rt:'whole', rp:40},
+    {id:'p03',name:'Şizofreni – yetersiz remisyon',             sub:'GAF 30-50, destekli yaşam',           rt:'whole', rp:60},
+    {id:'p04',name:'Şizofreni – ağır, bakıma bağımlı',         sub:'GAF <30',                             rt:'whole', rp:80},
+    {id:'p05',name:'Şizoaffektif bozukluk – orta',              sub:'',                                    rt:'whole', rp:40},
+    {id:'p06',name:'Şizoaffektif bozukluk – ağır',              sub:'',                                    rt:'whole', rp:60},
+    {id:'p07',name:'Kronik sanrısal bozukluk',                   sub:'',                                    rt:'whole', rp:35},
+  ]},
+  {cat:'Duygudurum Bozuklukları',items:[
+    {id:'p10',name:'Bipolar tip I – remisyon (ilaçla stabil)', sub:'',                                    rt:'whole', rp:20},
+    {id:'p11',name:'Bipolar tip I – kısmi remisyon',           sub:'Sık epizodlar',                       rt:'whole', rp:40},
+    {id:'p12',name:'Bipolar tip I – yetersiz kontrol',         sub:'',                                    rt:'whole', rp:60},
+    {id:'p13',name:'Majör depresif bozukluk – tek epizod, remisyon', sub:'',                             rt:'whole', rp:10},
+    {id:'p14',name:'Majör depresif bozukluk – rekürran, kısmi remisyon', sub:'',                         rt:'whole', rp:25},
+    {id:'p15',name:'Majör depresif bozukluk – tedaviye dirençli', sub:'',                                rt:'whole', rp:45},
+    {id:'p16',name:'Persistan depresif bozukluk (distimi)',     sub:'',                                    rt:'whole', rp:15},
+  ]},
+  {cat:'Anksiyete & OKB',items:[
+    {id:'p20',name:'OKB – hafif (ilaçla kontrol)',              sub:'GAF >60',                             rt:'whole', rp:15},
+    {id:'p21',name:'OKB – orta',                                sub:'GAF 45-60',                           rt:'whole', rp:30},
+    {id:'p22',name:'OKB – ağır, tedaviye dirençli',             sub:'GAF <45',                             rt:'whole', rp:50},
+    {id:'p23',name:'Panik bozukluk – agorafobisiz',             sub:'',                                    rt:'whole', rp:10},
+    {id:'p24',name:'Panik bozukluk – agorafobiyle, kısıtlı',   sub:'',                                    rt:'whole', rp:25},
+    {id:'p25',name:'Sosyal anksiyete – ağır',                   sub:'',                                    rt:'whole', rp:20},
+    {id:'p26',name:'TSSB – orta',                               sub:'',                                    rt:'whole', rp:30},
+    {id:'p27',name:'TSSB – ağır, kompleks',                     sub:'',                                    rt:'whole', rp:50},
+  ]},
+  {cat:'Kişilik & Madde',items:[
+    {id:'p30',name:'Borderline kişilik bozukluğu – orta',       sub:'',                                    rt:'whole', rp:25},
+    {id:'p31',name:'Borderline kişilik bozukluğu – ağır',       sub:'',                                    rt:'whole', rp:45},
+    {id:'p32',name:'Alkol kullanım bozukluğu – remisyon',        sub:'',                                    rt:'whole', rp:10},
+    {id:'p33',name:'Alkol kullanım bozukluğu – aktif, komplikasyonlu', sub:'',                            rt:'whole', rp:35},
+    {id:'p34',name:'Opioid bağımlılığı – MAT programında',       sub:'',                                    rt:'whole', rp:20},
+  ]},
+  {cat:'Nörogelişimsel',items:[
+    {id:'p40',name:'Hafif zekâ engeli (IQ 50-69)',               sub:'',                                    rt:'whole', rp:40},
+    {id:'p41',name:'Orta düzey zekâ engeli (IQ 35-49)',         sub:'',                                    rt:'whole', rp:60},
+    {id:'p42',name:'Ağır düzey zekâ engeli (IQ 20-34)',         sub:'',                                    rt:'whole', rp:80},
+    {id:'p43',name:'DEHB – erişkin, ağır, işlevsellik bozuk',   sub:'',                                    rt:'whole', rp:20},
+    {id:'p44',name:'Otizm spektrum – Düzey 2',                   sub:'',                                    rt:'whole', rp:50},
+    {id:'p45',name:'Otizm spektrum – Düzey 3',                   sub:'',                                    rt:'whole', rp:80},
+  ]},
+],
+
+cardio:[
+  {cat:'Kalp Yetmezliği',items:[
+    {id:'c01',name:'KY – NYHA I (EF <%40, semptom yok)',        sub:'',                                    rt:'whole', rp:10},
+    {id:'c02',name:'KY – NYHA II',                               sub:'Orta efor ile semptom',               rt:'whole', rp:25},
+    {id:'c03',name:'KY – NYHA III',                              sub:'Hafif efor ile semptom',              rt:'whole', rp:50},
+    {id:'c04',name:'KY – NYHA IV',                               sub:'İstirahatte semptom, bağımlı',        rt:'whole', rp:75},
+    {id:'c05',name:'KY – sol ventrikül destek cihazı (LVAD)',   sub:'',                                    rt:'whole', rp:55},
+  ]},
+  {cat:'Koroner Arter Hastalığı',items:[
+    {id:'c10',name:'Stabil angina – ilaçla kontrol',             sub:'',                                    rt:'whole', rp:10},
+    {id:'c11',name:'Stabil angina – orta efor kısıtı',          sub:'',                                    rt:'whole', rp:25},
+    {id:'c12',name:'MI sonrası – EF >%50, asemptomatik',        sub:'',                                    rt:'whole', rp:15},
+    {id:'c13',name:'MI sonrası – EF %35-50',                    sub:'',                                    rt:'whole', rp:30},
+    {id:'c14',name:'MI sonrası – EF <%35',                      sub:'',                                    rt:'whole', rp:50},
+    {id:'c15',name:'CABG / PTCA sonrası – stabil',              sub:'',                                    rt:'whole', rp:15},
+  ]},
+  {cat:'Kapak & Aritmi',items:[
+    {id:'c20',name:'Kapak replasmanı – iyi fonksiyon',           sub:'Antikoagülan bağımlı',                rt:'whole', rp:20},
+    {id:'c21',name:'Aort stenozu – ağır, operasyon bekliyor',   sub:'',                                    rt:'whole', rp:45},
+    {id:'c22',name:'Kalıcı pacemaker – tam bağımlı',            sub:'',                                    rt:'whole', rp:30},
+    {id:'c23',name:'Kalıcı pacemaker – kısmen bağımlı',         sub:'',                                    rt:'whole', rp:20},
+    {id:'c24',name:'ICD implantasyonu',                          sub:'',                                    rt:'whole', rp:25},
+    {id:'c25',name:'Atrial fibrilasyon – antikoagülan, kısıtlı',sub:'',                                    rt:'whole', rp:15},
+  ]},
+  {cat:'Periferik Damar',items:[
+    {id:'c30',name:'Periferik arter hastalığı – Fontaine III',  sub:'İstirahat ağrısı',                    rt:'whole', rp:40},
+    {id:'c31',name:'Periferik arter hastalığı – Fontaine IV',   sub:'Doku kaybı, gangren',                 rt:'whole', rp:60},
+    {id:'c32',name:'Derin ven trombozu – kronik post-trombotik',sub:'',                                    rt:'whole', rp:20},
+  ]},
+],
+
+pulmo:[
+  {cat:'KOAH',items:[
+    {id:'pu01',name:'KOAH – GOLD I (FEV1 >%80)',                sub:'Hafif',                               rt:'whole', rp:10},
+    {id:'pu02',name:'KOAH – GOLD II (FEV1 %50-80)',             sub:'Orta',                                rt:'whole', rp:25},
+    {id:'pu03',name:'KOAH – GOLD III (FEV1 %30-50)',            sub:'Ağır',                                rt:'whole', rp:45},
+    {id:'pu04',name:'KOAH – GOLD IV (FEV1 <%30)',               sub:'Çok ağır, uzun dönem O2',             rt:'whole', rp:65},
+  ]},
+  {cat:'Astım & Diğer Obstrüktif',items:[
+    {id:'pu10',name:'Astım – iyi kontrol altında',               sub:'',                                    rt:'whole', rp:5},
+    {id:'pu11',name:'Astım – kısmi kontrol, sık atak',          sub:'',                                    rt:'whole', rp:20},
+    {id:'pu12',name:'Astım – ağır, ilaç dirençli',              sub:'',                                    rt:'whole', rp:40},
+    {id:'pu13',name:'Bronşektazi – orta',                        sub:'',                                    rt:'whole', rp:20},
+    {id:'pu14',name:'Bronşektazi – ağır',                        sub:'',                                    rt:'whole', rp:40},
+  ]},
+  {cat:'Restriktif & Pulmoner HT',items:[
+    {id:'pu20',name:'İdiyopatik pulmoner fibrozis – erken',      sub:'',                                    rt:'whole', rp:25},
+    {id:'pu21',name:'İdiyopatik pulmoner fibrozis – ileri',      sub:'O2 bağımlı',                          rt:'whole', rp:55},
+    {id:'pu22',name:'Pulmoner hipertansiyon – WHO Sınıf II',    sub:'',                                    rt:'whole', rp:30},
+    {id:'pu23',name:'Pulmoner hipertansiyon – WHO Sınıf III-IV',sub:'',                                    rt:'whole', rp:60},
+    {id:'pu24',name:'Pnömonektomi (tek akciğer)',                sub:'',                                    rt:'whole', rp:40},
+    {id:'pu25',name:'Lobektomi – kalıcı fonksiyon kaybı',        sub:'',                                    rt:'whole', rp:20},
+    {id:'pu26',name:'Uyku apnesi – ağır, CPAP bağımlı',         sub:'',                                    rt:'whole', rp:15},
+    {id:'pu27',name:'Kifoskolyoz kaynaklı restriktif hastalık', sub:'Ağır',                                rt:'whole', rp:35},
+  ]},
+],
+
+intern:[
+  {cat:'Böbrek Hastalıkları',items:[
+    {id:'i01',name:'KBH Evre 3 (GFR 30-59)',                    sub:'İlaç tedavisinde',                    rt:'whole', rp:15},
+    {id:'i02',name:'KBH Evre 4 (GFR 15-29)',                    sub:'',                                    rt:'whole', rp:30},
+    {id:'i03',name:'KBH Evre 5 – diyalize girmiyor',            sub:'',                                    rt:'whole', rp:50},
+    {id:'i04',name:'Son dönem böbrek – hemodiyaliz',             sub:'3x/hafta',                            rt:'whole', rp:65},
+    {id:'i05',name:'Son dönem böbrek – periton diyalizi',        sub:'',                                    rt:'whole', rp:60},
+    {id:'i06',name:'Böbrek transplantasyonu – stabil',           sub:'İmmünosüpresif bağımlı',              rt:'whole', rp:25},
+    {id:'i07',name:'Tek böbrek – soliter (cerrahi/doğumsal)',   sub:'',                                    rt:'whole', rp:15},
+  ]},
+  {cat:'Karaciğer Hastalıkları',items:[
+    {id:'i10',name:'Karaciğer sirozu – Child-Pugh A',           sub:'',                                    rt:'whole', rp:20},
+    {id:'i11',name:'Karaciğer sirozu – Child-Pugh B',           sub:'',                                    rt:'whole', rp:40},
+    {id:'i12',name:'Karaciğer sirozu – Child-Pugh C',           sub:'',                                    rt:'whole', rp:65},
+    {id:'i13',name:'Karaciğer transplantasyonu – stabil',        sub:'',                                    rt:'whole', rp:25},
+  ]},
+  {cat:'Endokrin & Metabolik',items:[
+    {id:'i20',name:'Tip 1 diyabet – iyi kontrol, komplikasyonsuz', sub:'',                                rt:'whole', rp:15},
+    {id:'i21',name:'Diyabet – periferik nöropati + retinopati',  sub:'',                                    rt:'whole', rp:35},
+    {id:'i22',name:'Diyabet – nefropati (makroalbüminüri)',       sub:'',                                    rt:'whole', rp:40},
+    {id:'i23',name:'Addison hastalığı – steroid bağımlı',        sub:'',                                    rt:'whole', rp:25},
+    {id:'i24',name:'Cushing sendromu – aktif',                   sub:'',                                    rt:'whole', rp:35},
+    {id:'i25',name:'Akromegali – aktif, kontrolsüz',             sub:'',                                    rt:'whole', rp:30},
+    {id:'i26',name:'Hipotiroidizm – ilaçla tam kontrol',         sub:'',                                    rt:'whole', rp:5},
+  ]},
+  {cat:'Gastrointestinal',items:[
+    {id:'i30',name:'Crohn hastalığı – orta aktif',               sub:'',                                    rt:'whole', rp:25},
+    {id:'i31',name:'Crohn hastalığı – ağır, komplikasyonlu',     sub:'',                                    rt:'whole', rp:50},
+    {id:'i32',name:'Ülseratif kolit – orta aktif',               sub:'',                                    rt:'whole', rp:20},
+    {id:'i33',name:'Ülseratif kolit – ağır, kolektomi sonrası', sub:'',                                    rt:'whole', rp:30},
+    {id:'i34',name:'Kalıcı kolostomi / ileostomi',               sub:'',                                    rt:'whole', rp:25},
+    {id:'i35',name:'Kısa bağırsak sendromu – parenteral nütrisyon', sub:'',                               rt:'whole', rp:55},
+    {id:'i36',name:'Özofagus striktürü – ciddi disfaji',         sub:'',                                    rt:'whole', rp:25},
+  ]},
+  {cat:'Romatoloji',items:[
+    {id:'i40',name:'Skleroderma – sınırlı kutanöz',              sub:'',                                    rt:'whole', rp:20},
+    {id:'i41',name:'Skleroderma – yaygın kutanöz',               sub:'İç organ tutulumu',                   rt:'whole', rp:45},
+    {id:'i42',name:'Sjögren sendromu – sistemik tutulum',        sub:'',                                    rt:'whole', rp:20},
+    {id:'i43',name:'Polimiyozit / dermatomiyozit – orta',        sub:'',                                    rt:'whole', rp:30},
+    {id:'i44',name:'Polimiyozit / dermatomiyozit – ağır',        sub:'',                                    rt:'whole', rp:55},
+    {id:'i45',name:'Behçet hastalığı – göz/nöro tutulumu',       sub:'',                                    rt:'whole', rp:35},
+    {id:'i46',name:'Gut artriti – kronik tofüslü, ağır',        sub:'',                                    rt:'whole', rp:20},
+  ]},
+],
+
+ophthal:[
+  {cat:'Tek Göz – Görme Keskinliği (Snellen)',items:[
+    {id:'o01',name:'Tek göz tam görme kaybı',                    sub:'VA 0/60 veya daha kötü',              rt:'eye_mono', rp:100},
+    {id:'o02',name:'Tek göz – 1/60 görme',                      sub:'',                                    rt:'eye_mono', rp:95},
+    {id:'o03',name:'Tek göz – 2/60',                            sub:'',                                    rt:'eye_mono', rp:90},
+    {id:'o04',name:'Tek göz – 3/60',                            sub:'',                                    rt:'eye_mono', rp:85},
+    {id:'o05',name:'Tek göz – 6/60',                            sub:'',                                    rt:'eye_mono', rp:70},
+    {id:'o06',name:'Tek göz – 6/24',                            sub:'',                                    rt:'eye_mono', rp:50},
+    {id:'o07',name:'Tek göz – 6/18',                            sub:'',                                    rt:'eye_mono', rp:35},
+    {id:'o08',name:'Tek göz – 6/12',                            sub:'',                                    rt:'eye_mono', rp:20},
+    {id:'o09',name:'Tek göz – 6/9',                             sub:'',                                    rt:'eye_mono', rp:10},
+  ]},
+  {cat:'İki Göz – Birlikte Değerlendirme (Doğrudan TVE)',items:[
+    {id:'o10',name:'Bilateral tam körlük',                       sub:'Her iki gözde VA 0',                  rt:'whole', rp:85},
+    {id:'o11',name:'Bilateral ağır görme kaybı',                 sub:'İyi gözde 3/60 altı',                 rt:'whole', rp:70},
+    {id:'o12',name:'Bilateral orta görme kaybı',                 sub:'İyi gözde 6/24 altı',                 rt:'whole', rp:45},
+    {id:'o13',name:'Bilateral hafif görme kaybı',                sub:'İyi gözde 6/12',                      rt:'whole', rp:20},
+  ]},
+  {cat:'Görme Alanı',items:[
+    {id:'o20',name:'Bilateral hemianopsi',                       sub:'',                                    rt:'whole', rp:40},
+    {id:'o21',name:'Bilateral konsantrik daralma <%10',         sub:'Tünel görüş',                         rt:'whole', rp:60},
+    {id:'o22',name:'Bilateral konsantrik daralma 10-30°',       sub:'',                                    rt:'whole', rp:30},
+    {id:'o23',name:'Tek gözde görme alanı kaybı >%50',         sub:'',                                    rt:'eye_mono', rp:50},
+  ]},
+  {cat:'Diğer Göz Bozuklukları',items:[
+    {id:'o30',name:'Pitoz – cerrahi sonrası, kalıcı',            sub:'Görme alanını kapatıyor',             rt:'eye_mono', rp:30},
+    {id:'o31',name:'Kronik glokom – kontrol altında',            sub:'Görme alanı etkisi minimal',          rt:'whole', rp:10},
+    {id:'o32',name:'Kronik glokom – ağır görme alanı kaybı',    sub:'',                                    rt:'whole', rp:35},
+    {id:'o33',name:'Retinitis pigmentoza',                       sub:'Görme alanına göre değişir',          rt:'whole', rp:40},
+    {id:'o34',name:'Nistagmus – ağır, görme keskinliği etkili', sub:'',                                    rt:'whole', rp:20},
+    {id:'o35',name:'Diplopi – kalıcı, düzeltilemez',            sub:'',                                    rt:'whole', rp:15},
+    {id:'o36',name:'Göz protezi (enukleasyon)',                  sub:'',                                    rt:'eye_mono', rp:100},
+  ]},
+],
+
+ent:[
+  {cat:'İşitme Kaybı – İki Taraflı (Doğrudan TVE)',items:[
+    {id:'e01',name:'Bilateral total sağırlık',                   sub:'PTA >91 dB her iki kulak',            rt:'whole', rp:35},
+    {id:'e02',name:'Bilateral ağır işitme kaybı',                sub:'PTA 71-90 dB',                        rt:'whole', rp:25},
+    {id:'e03',name:'Bilateral orta şiddetli kayıp',              sub:'PTA 56-70 dB',                        rt:'whole', rp:15},
+    {id:'e04',name:'Bilateral orta kayıp',                       sub:'PTA 41-55 dB, cihaz bağımlı',         rt:'whole', rp:10},
+    {id:'e05',name:'Bilateral hafif kayıp (cihaz gerektiriyor)', sub:'PTA 26-40 dB',                        rt:'whole', rp:5},
+  ]},
+  {cat:'İşitme Kaybı – Tek Taraflı',items:[
+    {id:'e10',name:'Unilateral total sağırlık',                  sub:'Karşı kulak normal',                  rt:'whole', rp:10},
+    {id:'e11',name:'Unilateral ağır işitme kaybı',               sub:'',                                    rt:'whole', rp:6},
+  ]},
+  {cat:'Vestibüler',items:[
+    {id:'e20',name:'Kronik vestibüler bozukluk – ağır',          sub:'Denge kaybı, mesleki kısıt',          rt:'whole', rp:20},
+    {id:'e21',name:'Kronik vestibüler bozukluk – orta',          sub:'',                                    rt:'whole', rp:10},
+    {id:'e22',name:'Bilateral vestibüler yetmezlik',              sub:'',                                    rt:'whole', rp:30},
+  ]},
+  {cat:'Ses & Konuşma',items:[
+    {id:'e30',name:'Larenjektomi – total',                        sub:'Gastrointestinal ses / trakeotomi',   rt:'whole', rp:40},
+    {id:'e31',name:'Larenks stenozu – trakeotomi bağımlı',       sub:'',                                    rt:'whole', rp:45},
+    {id:'e32',name:'Vokal kord paralizisi – bilateral',          sub:'Ses kısıklığı + aspirasyon riski',    rt:'whole', rp:30},
+    {id:'e33',name:'Vokal kord paralizisi – unilateral',         sub:'',                                    rt:'whole', rp:10},
+    {id:'e34',name:'Kronik disfoni – mesleki kısıt',             sub:'',                                    rt:'whole', rp:10},
+  ]},
+  {cat:'Burun & Sinüs',items:[
+    {id:'e40',name:'Kronik rinit / sinüzit – ağır, ameliyat sonrası', sub:'',                              rt:'whole', rp:10},
+    {id:'e41',name:'Septal perforasyon – geniş, semptomatik',    sub:'',                                    rt:'whole', rp:10},
+    {id:'e42',name:'Koku alma kaybı – tam (anosmi)',              sub:'',                                    rt:'whole', rp:5},
+  ]},
+],
+
+urology:[
+  {cat:'İdrar Kaçırma & Mesane',items:[
+    {id:'u01',name:'Komplet idrar inkontinansı – kalıcı',        sub:'Kalıcı kateter / kolostomi',          rt:'whole', rp:40},
+    {id:'u02',name:'Ağır stres/sıkışma inkontinansı',            sub:'Günlük pad kullanımı',                rt:'whole', rp:20},
+    {id:'u03',name:'Nörojenik mesane – intermitan kateterizasyon', sub:'',                                  rt:'whole', rp:25},
+    {id:'u04',name:'Mesane ekstrofisi – onarım sonrası',         sub:'',                                    rt:'whole', rp:30},
+    {id:'u05',name:'Sistektomi – üriner diversiyon',              sub:'',                                    rt:'whole', rp:35},
+  ]},
+  {cat:'Böbrek & Üreter',items:[
+    {id:'u10',name:'Tek böbrek (nefrektomi) – kompansasyon yok', sub:'',                                    rt:'whole', rp:20},
+    {id:'u11',name:'Üriner diversiyon – kalıcı',                  sub:'',                                    rt:'whole', rp:30},
+    {id:'u12',name:'Üreterostomi – bilateral',                    sub:'',                                    rt:'whole', rp:35},
+  ]},
+  {cat:'Erkek Üreme Organları',items:[
+    {id:'u20',name:'Bilateral orşiektomi',                        sub:'',                                    rt:'whole', rp:20},
+    {id:'u21',name:'Erektil disfonksiyon – organik, tedaviye yanıtsız', sub:'',                            rt:'whole', rp:10},
+    {id:'u22',name:'Priapizm sekeli – ağır fonksiyon kaybı',    sub:'',                                    rt:'whole', rp:15},
+    {id:'u23',name:'Peyronie hastalığı – ağır, tedaviye dirençli', sub:'',                               rt:'whole', rp:10},
+    {id:'u24',name:'Radikal prostatektomi',                       sub:'İnkontinans + ED',                   rt:'whole', rp:25},
+  ]},
+],
+
+gynec:[
+  {cat:'Pelvik Taban & İnkontinans',items:[
+    {id:'g01',name:'Ağır pelvik organ prolapsusu (POP-Q III-IV)',sub:'',                                    rt:'whole', rp:25},
+    {id:'g02',name:'Anal inkontinans – ağır, kalıcı',            sub:'',                                    rt:'whole', rp:30},
+    {id:'g03',name:'Vezikovajinal fistül – cerrahi sonrası, kalıcı', sub:'',                              rt:'whole', rp:30},
+    {id:'g04',name:'Rektovajinal fistül – kalıcı',               sub:'',                                    rt:'whole', rp:30},
+  ]},
+  {cat:'Üreme & Hormonal',items:[
+    {id:'g10',name:'Bilateral ooferektomi (premenopoz)',          sub:'Hormon tedavisine bağımlı',           rt:'whole', rp:20},
+    {id:'g11',name:'Histerektomi – komplikasyonsuz',              sub:'',                                    rt:'whole', rp:10},
+    {id:'g12',name:'Endometriozis – ağır (Evre III-IV)',         sub:'Tekrarlayan cerrahi',                 rt:'whole', rp:20},
+    {id:'g13',name:'Jinekolojik fistül – üriner diversiyon',     sub:'',                                    rt:'whole', rp:35},
+  ]},
+  {cat:'Obstetrik Sekeller',items:[
+    {id:'g20',name:'Obstetrik pelvik taban hasarı – ağır',       sub:'',                                    rt:'whole', rp:25},
+    {id:'g21',name:'Obstetrik brakiyal pleksus hasarı',          sub:'',                                    rt:'upper_ext', rp:55},
+  ]},
+],
+
+derma:[
+  {cat:'Yaygın Cilt Hastalıkları',items:[
+    {id:'d01',name:'Psöriyazis – hafif (<3% BSA, kontrol)',      sub:'',                                    rt:'whole', rp:5},
+    {id:'d02',name:'Psöriyazis – orta (3-10% BSA)',              sub:'',                                    rt:'whole', rp:15},
+    {id:'d03',name:'Psöriyazis – ağır (>10% BSA, tedaviye dirençli)', sub:'',                            rt:'whole', rp:30},
+    {id:'d04',name:'Atopik dermatit – ağır, yaygın',             sub:'',                                    rt:'whole', rp:20},
+    {id:'d05',name:'Büllöz pemfigoid – yaygın, aktif',          sub:'',                                    rt:'whole', rp:35},
+    {id:'d06',name:'Pemfigus vulgaris – tedaviye bağımlı',       sub:'',                                    rt:'whole', rp:40},
+    {id:'d07',name:'İktiyozis – yaygın, ciddi fonksiyon kaybı', sub:'',                                    rt:'whole', rp:25},
+  ]},
+  {cat:'Yanık & Yara Sekelleri',items:[
+    {id:'d10',name:'Yanık sekeli – <%20 BSA, kontraktür yok',   sub:'',                                    rt:'whole', rp:10},
+    {id:'d11',name:'Yanık sekeli – %20-40 BSA',                  sub:'Kontraktür olabilir',                 rt:'whole', rp:25},
+    {id:'d12',name:'Yanık sekeli – >%40 BSA',                   sub:'Ağır kontraktürler, eklem kısıtı',    rt:'whole', rp:40},
+    {id:'d13',name:'Yüz yanığı sekeli – ağır deformite',        sub:'',                                    rt:'whole', rp:30},
+  ]},
+  {cat:'Melanom & Cilt Kanseri Sekeli',items:[
+    {id:'d20',name:'Melanom – remisyon, lokal geniş eksizyon',  sub:'',                                    rt:'whole', rp:10},
+    {id:'d21',name:'Melanom – lenf nodu diseksiyonu sekeli',     sub:'Lenfödem',                            rt:'whole', rp:20},
+  ]},
+],
+
+hemato:[
+  {cat:'Hematolojik Hastalıklar',items:[
+    {id:'h01',name:'Hemofili A/B – orta ağır',                   sub:'Faktör bağımlı',                      rt:'whole', rp:30},
+    {id:'h02',name:'Hemofili A/B – ağır',                        sub:'Spontan kanama, eklem hasarı',        rt:'whole', rp:50},
+    {id:'h03',name:'Orak hücre anemisi – orta',                  sub:'',                                    rt:'whole', rp:30},
+    {id:'h04',name:'Orak hücre anemisi – ağır (organ tutulumu)', sub:'',                                    rt:'whole', rp:55},
+    {id:'h05',name:'Talasemi majör – transfüzyon bağımlı',       sub:'',                                    rt:'whole', rp:50},
+    {id:'h06',name:'Aplastik anemi – kronik, tedavi bağımlı',    sub:'',                                    rt:'whole', rp:45},
+    {id:'h07',name:'Trombositopenik purpura – kronik, tedaviye dirençli', sub:'',                          rt:'whole', rp:20},
+    {id:'h08',name:'Polisitemia vera – komplikasyonlu',           sub:'',                                    rt:'whole', rp:25},
+  ]},
+  {cat:'Onkoloji (Remisyon Sonrası Sekel)',items:[
+    {id:'h10',name:'Akciğer kanseri – remisyon, lobektomi sekeli', sub:'',                                 rt:'whole', rp:30},
+    {id:'h11',name:'Meme kanseri – mastektomi, lenfadenektomi',  sub:'',                                    rt:'whole', rp:20},
+    {id:'h12',name:'Kolorektal kanser – kolostomi, remisyon',    sub:'',                                    rt:'whole', rp:25},
+    {id:'h13',name:'Mesane kanseri – sistektomi, remisyon',      sub:'',                                    rt:'whole', rp:35},
+    {id:'h14',name:'Lenfoma – remisyon, tedavi sekeli',          sub:'',                                    rt:'whole', rp:20},
+    {id:'h15',name:'Lösemi – remisyon, kemik iliği sekeli',      sub:'',                                    rt:'whole', rp:25},
+    {id:'h16',name:'Beyin tümörü – opere, nörolojik sekel',      sub:'',                                    rt:'whole', rp:40},
+    {id:'h17',name:'Aktif, tedavi altında malignite',             sub:'Genel durum değerlendirmesi',         rt:'whole', rp:50},
+  ]},
+],
+};
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let curBranch = 'msk';
+let sel = {}; // { id: { name, branch, sub, rt, rp } }
+
+// ═══════════════════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('reportDate').valueAsDate = new Date();
+  document.getElementById('pDate').valueAsDate = new Date();
   renderBranchTabs();
   renderList();
 });
 
-// ═══════════════════════════════════════════════════════════════════
-// BRANCH TABS
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// BRANCHES
+// ═══════════════════════════════════════════════════
 function renderBranchTabs() {
-  const el = document.getElementById('branchTabs');
-  el.innerHTML = BRANCHES.map(b => `
-    <button class="branch-tab ${b.id === currentBranch ? 'active' : ''}"
-            onclick="switchBranch('${b.id}')">
-      <span class="dot" style="background:${b.color}"></span>
-      ${b.label}
-    </button>
-  `).join('');
-  document.getElementById('branchBadge').textContent =
-    BRANCHES.find(b => b.id === currentBranch)?.label || '';
+  document.getElementById('branchTabs').innerHTML = BRANCHES.map(b =>
+    `<button class="btab ${b.id===curBranch?'active':''}" onclick="switchBranch('${b.id}')">
+       <span class="dot" style="background:${b.color}"></span>${b.label}
+     </button>`
+  ).join('');
+  document.getElementById('branchLabel').textContent =
+    BRANCHES.find(b=>b.id===curBranch)?.label||'';
 }
-
-function switchBranch(id) {
-  currentBranch = id;
-  document.getElementById('searchInput').value = '';
+function switchBranch(id){
+  curBranch=id;
+  document.getElementById('search').value='';
   renderBranchTabs();
   renderList();
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // DISABILITY LIST
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 function renderList() {
-  const query = document.getElementById('searchInput').value.toLowerCase().trim();
-  const list = document.getElementById('disabilityList');
-  const cats = DATA[currentBranch];
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  const cats = DATA[curBranch] || [];
   let html = '';
-  let anyVisible = false;
-
+  let any = false;
   for (const cat of cats) {
-    const filtered = query
-      ? cat.items.filter(it => it.name.toLowerCase().includes(query) || it.sub.toLowerCase().includes(query))
-      : cat.items;
-    if (!filtered.length) continue;
-    anyVisible = true;
-    html += `<div class="cat-header">${cat.cat}</div>`;
-    for (const item of filtered) {
-      const isSel = !!selected[item.id];
-      const pctVal = isSel ? selected[item.id].pct : item.pct;
+    const items = q ? cat.items.filter(i => i.name.toLowerCase().includes(q) || (i.sub||'').toLowerCase().includes(q)) : cat.items;
+    if (!items.length) continue;
+    any = true;
+    html += `<div class="cath">${cat.cat}</div>`;
+    for (const it of items) {
+      const isSel = !!sel[it.id];
+      const rp = isSel ? sel[it.id].rp : it.rp;
+      const chain = RC[it.rt]||RC.whole;
       html += `
-        <div class="dis-item ${isSel ? 'selected' : ''}" id="row_${item.id}"
-             onclick="toggleItem('${item.id}')">
-          <input type="checkbox" ${isSel ? 'checked' : ''}
-                 onclick="event.stopPropagation(); toggleItem('${item.id}')" />
-          <span class="dis-name">
-            ${item.name}
-            ${item.sub ? `<span class="sub">${item.sub}</span>` : ''}
-          </span>
-          <span class="pct-control" onclick="event.stopPropagation()">
-            <input type="number" min="0" max="100"
-                   value="${pctVal}"
-                   id="pct_${item.id}"
-                   ${isSel ? '' : 'disabled'}
-                   onchange="updatePct('${item.id}', this.value)"
-                   onclick="if(!this.disabled){event.stopPropagation()}" />
-            <span class="pct-sign">%</span>
+        <div class="ditem ${isSel?'sel':''}" id="row_${it.id}" onclick="toggleItem('${it.id}')">
+          <input type="checkbox" ${isSel?'checked':''} onclick="event.stopPropagation();toggleItem('${it.id}')"/>
+          <span class="dname">${it.name}${it.sub?`<span class="dsub">${it.sub}</span>`:''}</span>
+          <span class="rbadge">${chain.title}</span>
+          <span class="pctl" onclick="event.stopPropagation()">
+            <input type="number" min="0" max="100" value="${rp}" id="pct_${it.id}"
+              ${isSel?'':'disabled'}
+              onchange="updateRp('${it.id}',this.value)"/>
+            <span class="psign">%</span>
           </span>
         </div>`;
     }
   }
-
-  if (!anyVisible) {
-    html = `<div class="no-results">Arama sonucu bulunamadı.</div>`;
-  }
-  list.innerHTML = html;
+  if (!any) html = `<div class="nores">Sonuç bulunamadı.</div>`;
+  document.getElementById('dlist').innerHTML = html;
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// TOGGLE & UPDATE
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// TOGGLE / UPDATE
+// ═══════════════════════════════════════════════════
 function toggleItem(id) {
-  const cats = DATA[currentBranch];
   let item = null;
-  for (const cat of cats) {
-    item = cat.items.find(i => i.id === id);
+  for (const b in DATA) {
+    for (const cat of DATA[b]) {
+      const found = cat.items.find(i=>i.id===id);
+      if (found) { item = found; break; }
+    }
     if (item) break;
   }
   if (!item) return;
-
-  if (selected[id]) {
-    delete selected[id];
-  } else {
-    selected[id] = {
+  if (sel[id]) { delete sel[id]; }
+  else {
+    sel[id] = {
       name: item.name,
-      branch: BRANCHES.find(b => b.id === currentBranch)?.label || '',
-      pct: item.pct,
+      sub: item.sub||'',
+      branch: BRANCHES.find(b=>b.id===curBranch)?.label||'',
+      rt: item.rt,
+      rp: item.rp,
     };
   }
   renderList();
-  renderSelectedPanel();
-  recalculate();
+  renderSelPanel();
+  recalc();
 }
 
-function updatePct(id, val) {
-  const v = Math.min(100, Math.max(0, parseInt(val, 10) || 0));
-  if (selected[id]) {
-    selected[id].pct = v;
-    renderSelectedPanel();
-    recalculate();
-  }
+function updateRp(id, val) {
+  const v = Math.min(100, Math.max(0, parseInt(val,10)||0));
+  if (sel[id]) { sel[id].rp = v; renderSelPanel(); recalc(); }
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // SELECTED PANEL
-// ═══════════════════════════════════════════════════════════════════
-function renderSelectedPanel() {
-  const el = document.getElementById('selectedList');
-  const count = Object.keys(selected).length;
-  document.getElementById('selCount').textContent = count;
+// ═══════════════════════════════════════════════════
+function renderSelPanel() {
+  const el = document.getElementById('selPanel');
+  const cnt = Object.keys(sel).length;
+  document.getElementById('selCount').textContent = cnt;
+  if (!cnt) { el.innerHTML = '<div class="selempty">Henüz engel seçilmedi.</div>'; return; }
 
-  if (!count) {
-    el.innerHTML = '<div class="selected-empty">Henüz engel seçilmedi.</div>';
-    return;
-  }
-
-  let html = '<div class="sel-list">';
-  for (const [id, item] of Object.entries(selected)) {
+  let html = '<div class="slist">';
+  for (const [id, it] of Object.entries(sel)) {
+    const steps = chainSteps(it.rt, it.rp);
+    const wp = wpPct(it.rt, it.rp);
     html += `
-      <div class="sel-item">
-        <span class="sel-name">
-          ${item.name}
-          <span class="sel-branch">${item.branch}</span>
-        </span>
-        <span class="sel-pct">%${item.pct}</span>
-        <button class="sel-del" onclick="removeSelected('${id}')" title="Kaldır">×</button>
+      <div class="sitem">
+        <div class="sitem-top">
+          <span class="sname">${it.name}<span class="sbranch">${it.branch}</span></span>
+          <button class="sdel" onclick="removeItem('${id}')" title="Kaldır">×</button>
+        </div>
+        <div class="chain">
+          ${steps.map((s,i)=>{
+            const isFinal = i===steps.length-1;
+            return `<span class="cstep">
+              <span class="cstep-box ${isFinal?'final':''}">
+                ${s.l} <strong>${s.p}%</strong>
+              </span>
+              ${!isFinal?'<span class="carrow">→</span>':''}
+            </span>`;
+          }).join('')}
+          ${steps.length>1?`<span style="font-size:.65rem;color:var(--muted);margin-left:6px">↑ Balthazard'a giren</span>`:''}
+        </div>
       </div>`;
   }
   html += '</div>';
   el.innerHTML = html;
 }
 
-function removeSelected(id) {
-  delete selected[id];
+function removeItem(id) {
+  delete sel[id];
   renderList();
-  renderSelectedPanel();
-  recalculate();
+  renderSelPanel();
+  recalc();
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // BALTHAZARD CALCULATION
-// ═══════════════════════════════════════════════════════════════════
-function recalculate() {
-  const items = Object.values(selected);
-  const stepsCard = document.getElementById('stepsCard');
-  const stepsEl = document.getElementById('formulaSteps');
-  const resultBox = document.getElementById('resultBox');
+// ═══════════════════════════════════════════════════
+function recalc() {
+  const items = Object.entries(sel).map(([id,it])=>({
+    id, name:it.name, wp: wpPct(it.rt, it.rp)
+  })).sort((a,b)=>b.wp-a.wp);
+
+  const sc = document.getElementById('stepsCard');
+  const se = document.getElementById('fsteps');
+  const rb = document.getElementById('rbox');
 
   if (!items.length) {
-    stepsCard.style.display = 'none';
-    resultBox.className = 'result-box empty';
-    resultBox.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:16px 0;">Engel seçildiğinde otomatik hesaplanır.</div>';
+    sc.style.display='none';
+    rb.className='rbox empty';
+    rb.innerHTML='<div style="color:var(--muted);font-size:.84rem;padding:14px 0">Engel seçildiğinde otomatik hesaplanır.</div>';
     return;
   }
 
-  // Sort descending
-  const sorted = [...items].sort((a, b) => b.pct - a.pct);
-
-  // Balthazard: combined = 1 - product(1 - pi)
-  let stepsHtml = '';
-  let remaining = 1.0; // 1 - accumulated
-  let cumulative = 0.0;
-
-  for (let i = 0; i < sorted.length; i++) {
-    const p = sorted[i].pct / 100;
-    const contribution = remaining * p;
-    cumulative += contribution;
-    remaining = remaining * (1 - p);
-
-    const cumPct = Math.round(cumulative * 100);
-    stepsHtml += `
-      <div class="step">
-        <span class="lbl">E${i + 1}</span>
-        <span>${sorted[i].name} — <strong>%${sorted[i].pct}</strong>
-          ${i === 0 ? '' : `→ Kalan kapasiteye (${Math.round((1 - cumulative + contribution) * 100)}%) uygulandı`}
-          → Birleşik: <strong>%${cumPct}</strong>
-        </span>
-      </div>`;
+  let rem = 1.0, cum = 0.0;
+  let stHtml = '<div style="font-size:.72rem;color:var(--muted);margin-bottom:6px">TVE girdileri büyükten küçüğe:</div>';
+  for (let i=0;i<items.length;i++) {
+    const p = items[i].wp/100;
+    const contrib = rem*p;
+    cum += contrib;
+    rem = rem*(1-p);
+    const cumP = Math.round(cum*100);
+    stHtml += `<div class="fstep"><span class="fl">E${i+1}</span>
+      <span>${items[i].name} — TVE <strong>%${items[i].wp}</strong>
+        ${i>0?`→ kalan kapasite üzerinden katkı: %${Math.round(contrib*100)}`:''}
+        → birleşik: <strong>%${cumP}</strong>
+      </span></div>`;
   }
 
-  const finalPct = Math.round(cumulative * 100);
-  stepsCard.style.display = '';
-  stepsEl.innerHTML = stepsHtml;
+  const final = Math.round(cum*100);
+  sc.style.display='';
+  se.innerHTML = stHtml;
 
-  // Result class
-  const cls = getClass(finalPct);
-  resultBox.className = 'result-box active';
-  resultBox.innerHTML = `
-    <div class="result-pct">%${finalPct}</div>
-    <div class="result-label">Birleşik Engel Oranı (Balthazard)</div>
-    <div class="result-class ${cls.css}">${cls.label}</div>
-  `;
-
-  // Update print area
-  buildPrintLeft();
+  const cls = getClass(final);
+  rb.className='rbox active';
+  rb.innerHTML=`
+    <div class="rpct">%${final}</div>
+    <div class="rlabel">Birleşik Engel Oranı (Balthazard Formülü)</div>
+    <div class="rcls ${cls.css}">${cls.label}</div>`;
 }
 
-function getClass(pct) {
-  if (pct < 20) return { css: 'c0', label: 'Engelli sayılmaz (%0-19)' };
-  if (pct < 40) return { css: 'c1', label: 'Hafif düzeyde engellilik (%20-39)' };
-  if (pct < 60) return { css: 'c2', label: 'Orta düzeyde engellilik (%40-59)' };
-  if (pct < 80) return { css: 'c3', label: 'Ağır düzeyde engellilik (%60-79)' };
-  return { css: 'c4', label: 'Tam bağımlı engellilik (%80-100)' };
+function getClass(p){
+  if(p<20) return {css:'c0',label:'Engelli sayılmaz (%0-19)'};
+  if(p<40) return {css:'c1',label:'Hafif düzeyde engellilik (%20-39)'};
+  if(p<60) return {css:'c2',label:'Orta düzeyde engellilik (%40-59)'};
+  if(p<80) return {css:'c3',label:'Ağır düzeyde engellilik (%60-79)'};
+  return {css:'c4',label:'Tam bağımlı engellilik (%80-100)'};
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// PRINT BUILD
-// ═══════════════════════════════════════════════════════════════════
-function buildPrintLeft() {
-  const el = document.getElementById('printSelectedLeft');
-  const items = Object.values(selected);
-  if (!items.length) { el.innerHTML = ''; return; }
-
-  const sorted = [...items].sort((a, b) => b.pct - a.pct);
-  let html = '<h3 style="margin-bottom:10px;color:#1a5276;">Seçili Engeller</h3><table style="width:100%;border-collapse:collapse;font-size:0.85rem;">';
-  html += '<thead><tr style="background:#1a5276;color:#fff;"><th style="padding:6px 10px;text-align:left;">Engel Tanımı</th><th style="padding:6px 10px;text-align:left;">Branş</th><th style="padding:6px 10px;text-align:center;">Oran</th></tr></thead><tbody>';
-  sorted.forEach((it, i) => {
-    const bg = i % 2 === 0 ? '#f0f4f8' : '#fff';
-    html += `<tr style="background:${bg}"><td style="padding:5px 10px;">${it.name}</td><td style="padding:5px 10px;">${it.branch}</td><td style="padding:5px 10px;text-align:center;font-weight:700;">%${it.pct}</td></tr>`;
-  });
-  html += '</tbody></table>';
-  el.innerHTML = html;
-}
-
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // UTILITIES
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 function copyResult() {
-  const items = Object.values(selected);
+  const items = Object.entries(sel).map(([id,it])=>({name:it.name,rp:it.rp,rt:it.rt,branch:it.branch,wp:wpPct(it.rt,it.rp)})).sort((a,b)=>b.wp-a.wp);
   if (!items.length) { showToast('Önce engel seçin.'); return; }
-
-  const sorted = [...items].sort((a, b) => b.pct - a.pct);
-  const remaining = { v: 1.0 };
-  const combined = sorted.reduce((acc, item) => {
-    const p = item.pct / 100;
-    const contrib = remaining.v * p;
-    remaining.v = remaining.v * (1 - p);
-    return acc + contrib;
-  }, 0);
-  const finalPct = Math.round(combined * 100);
-
-  const name = document.getElementById('patientName').value || '—';
+  let rem=1.0,cum=0.0;
+  items.forEach(it=>{ const p=it.wp/100; cum+=rem*p; rem*=(1-p); });
+  const final=Math.round(cum*100);
   const lines = [
-    `Hasta: ${name}`,
-    `Rapor Tarihi: ${document.getElementById('reportDate').value || '—'}`,
-    `Seçili Engeller:`,
-    ...sorted.map(it => `  • ${it.name} (${it.branch}): %${it.pct}`),
+    `Hasta: ${document.getElementById('pName').value||'—'}`,
+    `Rapor: ${document.getElementById('pDate').value||'—'}`,
+    `Hekim: ${document.getElementById('pDoc').value||'—'}`,
     ``,
-    `Balthazard Birleşik Engel Oranı: %${finalPct}`,
-    getClass(finalPct).label,
+    `Seçili Engeller:`,
+    ...items.map(it=>{
+      const steps=chainSteps(it.rt,it.rp);
+      const chain=steps.map(s=>`${s.l} %${s.p}`).join(' → ');
+      return `  • ${it.name} (${it.branch}): ${chain}`;
+    }),
+    ``,
+    `Balthazard Birleşik Engel Oranı: %${final}`,
+    getClass(final).label,
   ];
   navigator.clipboard.writeText(lines.join('\n'))
-    .then(() => showToast('Sonuç panoya kopyalandı!'))
-    .catch(() => showToast('Kopyalama başarısız.'));
+    .then(()=>showToast('Sonuç panoya kopyalandı!'))
+    .catch(()=>showToast('Kopyalama başarısız.'));
 }
 
-function clearAll() {
-  if (!Object.keys(selected).length) return;
-  selected = {};
+function clearAll(){
+  if(!Object.keys(sel).length) return;
+  sel={};
   renderList();
-  renderSelectedPanel();
-  recalculate();
+  renderSelPanel();
+  recalc();
   showToast('Tüm seçimler temizlendi.');
 }
 
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
+function showToast(msg){
+  const t=document.createElement('div');
+  t.className='toast';
+  t.textContent=msg;
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2800);
+  setTimeout(()=>t.remove(),2800);
 }
 </script>
 </body>
