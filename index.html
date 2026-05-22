@@ -261,6 +261,29 @@ header{
 .btn-o{background:#fff;color:var(--brand);border:1.5px solid var(--brand-ring);}
 .btn-o:hover{background:var(--brand-bg);}
 
+/* ── WARNING BOX ── */
+.warn-box{
+  background:#fff7ed;border:1.5px solid #fed7aa;border-radius:var(--radius-sm);
+  padding:10px 14px;font-size:.76rem;color:#9a3412;line-height:1.65;
+  margin-bottom:14px;display:flex;gap:10px;align-items:flex-start;
+}
+.warn-box .wico{font-size:1rem;flex-shrink:0;margin-top:1px;}
+.warn-box strong{color:#7c2d12;}
+
+/* ── ROM SUM NOTE ── */
+.cath-romtag{
+  margin-left:auto;font-size:.6rem;color:#6d28d9;background:#f3e8ff;
+  border:1px solid #ddd6fe;border-radius:4px;padding:0 6px;font-weight:600;
+  letter-spacing:.01em;
+}
+
+/* ── BRANCH COUNT ── */
+.btab .bcnt{
+  background:rgba(255,255,255,.9);color:var(--brand-d);
+  font-size:.6rem;font-weight:700;border-radius:8px;padding:0 5px;min-width:16px;text-align:center;
+}
+.btab.active .bcnt{background:rgba(255,255,255,.25);color:#fff;}
+
 /* ── TOAST ── */
 .toast{
   position:fixed;bottom:24px;right:24px;
@@ -362,7 +385,7 @@ header{
       <div class="pgrid">
         <div class="fg"><label>Ad Soyad</label><input id="pName" type="text" placeholder="Hasta adı soyadı"/></div>
         <div class="fg"><label>T.C. Kimlik No</label><input id="pTC" type="text" maxlength="11" placeholder="___________"/></div>
-        <div class="fg"><label>Doğum Tarihi</label><input id="pDOB" type="date"/></div>
+        <div class="fg"><label>Doğum Tarihi</label><input id="pDOB" type="date" oninput="calcAge()"/><span id="pAge" style="font-size:.7rem;color:var(--ink3);margin-top:3px;display:none"></span></div>
         <div class="fg"><label>Cinsiyet</label><select id="pGender"><option value="">Seçiniz</option><option>Erkek</option><option>Kadın</option></select></div>
         <div class="fg"><label>Kurum / Hastane</label><input id="pInst" type="text" placeholder="Hastane adı"/></div>
         <div class="fg"><label>Rapor Tarihi</label><input id="pDate" type="date"/></div>
@@ -405,6 +428,8 @@ header{
           <div id="selPanel"><div class="selempty"><span class="selempty-ico">📋</span>Henüz engel seçilmedi.<br><span style="font-size:.75rem">Soldan tanı seçerek başlayın.</span></div></div>
         </div>
       </div>
+
+      <div id="warnBox" class="warn-box no-print" style="display:none"></div>
 
       <div class="finfo no-print">
         <strong>Dönüşüm zinciri:</strong> Her engel anatomik düzeyinde belirlenir; parmak→el→üst eks.→TVE, ayak→alt eks.→TVE zincirleriyle otomatik dönüştürülür.<br>
@@ -1669,6 +1694,7 @@ function loadSession() {
         const el = document.getElementById(id);
         if (el && val) el.value = val;
       });
+      calcAge();
     }
   } catch(e) {}
 }
@@ -1708,14 +1734,20 @@ document.addEventListener('DOMContentLoaded', () => {
 // ═══════════════════════════════════════════════════
 // BRANCHES
 // ═══════════════════════════════════════════════════
+function branchSelCount(branchId) {
+  const label = BRANCHES.find(b=>b.id===branchId)?.label||'';
+  return Object.values(sel).filter(it=>it.branch===label).length;
+}
+
 function renderBranchTabs() {
   document.getElementById('branchTabs').innerHTML = BRANCHES.map(b => {
     const isActive = b.id === curBranch;
+    const cnt = branchSelCount(b.id);
     const style = isActive
       ? `background:${b.color};border-color:${b.color};`
       : '';
     return `<button class="btab ${isActive?'active':''}" style="${style}" onclick="switchBranch('${b.id}')">
-       <span class="dot" style="background:${isActive?'rgba(255,255,255,.8)':b.color}"></span>${b.label}
+       <span class="dot" style="background:${isActive?'rgba(255,255,255,.8)':b.color}"></span>${b.label}${cnt>0?`<span class="bcnt">${cnt}</span>`:''}
      </button>`;
   }).join('');
   document.getElementById('branchLabel').textContent =
@@ -1761,7 +1793,9 @@ function renderList() {
     const items = q ? cat.items.filter(i => i.name.toLowerCase().includes(q) || (i.sub||'').toLowerCase().includes(q)) : cat.items;
     if (!items.length) continue;
     any = true;
-    html += `<div class="cath">${cat.cat}<span class="cath-count">${items.length}</span></div>`;
+    const isROM = cat.cat.includes('ROM') || cat.cat.includes('Tablo 1.4') || cat.cat.includes('Tablo 1.5') || cat.cat.includes('Tablo 1.6');
+    const isGait = cat.cat.includes('Yürüyüş Bozukluğu');
+    html += `<div class="cath">${cat.cat}<span class="cath-count">${items.length}</span>${isROM?'<span class="cath-romtag">ARİTMETİK TOPLAM</span>':''}${isGait?'<span class="cath-romtag" style="color:#9a3412;background:#fff7ed;border-color:#fed7aa">TEK BAŞINA</span>':''}</div>`;
     for (const it of items) {
       const chain = RC[it.rt]||RC.whole;
       const nameHl = highlight(it.name, q);
@@ -1872,7 +1906,7 @@ function renderSelPanel() {
   const el = document.getElementById('selPanel');
   const cnt = Object.keys(sel).length;
   document.getElementById('selCount').textContent = cnt;
-  if (!cnt) { el.innerHTML = '<div class="selempty">Henüz engel seçilmedi.</div>'; return; }
+  if (!cnt) { el.innerHTML = '<div class="selempty"><span class="selempty-ico">📋</span>Henüz engel seçilmedi.<br><span style="font-size:.75rem">Soldan tanı seçerek başlayın.</span></div>'; return; }
 
   let html = '<div class="slist">';
   for (const [id, it] of Object.entries(sel)) {
@@ -1930,6 +1964,8 @@ function recalc() {
   const se = document.getElementById('fsteps');
   const rb = document.getElementById('rbox');
 
+  updateWarnings();
+  renderBranchTabs();
   if (!items.length) {
     sc.style.display='none';
     rb.className='rbox empty';
@@ -2018,6 +2054,52 @@ function copyResult() {
   navigator.clipboard.writeText(lines.join('\n'))
     .then(()=>showToast('Sonuç panoya kopyalandı!','success'))
     .catch(()=>showToast('Kopyalama başarısız.','error'));
+}
+
+function calcAge() {
+  const dob = document.getElementById('pDOB').value;
+  const el = document.getElementById('pAge');
+  if (!dob) { el.style.display='none'; return; }
+  const birth = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  if (age >= 0 && age < 150) {
+    el.textContent = `Yaş: ${age}`;
+    el.style.display = 'block';
+  } else {
+    el.style.display='none';
+  }
+}
+
+const GAIT_IDS = new Set(['m190','m191','m192','m193','m194','m195','m196','m197','m198','m199','m199b','m199c']);
+const ROM_CATS = ['ROM', 'Tablo 1.4', 'Tablo 1.5', 'Tablo 1.6'];
+
+function updateWarnings() {
+  const wb = document.getElementById('warnBox');
+  if (!wb) return;
+  const ids = Object.keys(sel);
+  const hasGait = ids.some(id => GAIT_IDS.has(id.replace(/_[LR]$/,'')));
+  const hasMSKJoint = ids.some(id => {
+    const base = id.replace(/_[LR]$/,'');
+    if (GAIT_IDS.has(base)) return false;
+    const item = findItem(base);
+    if (!item) return false;
+    // MSK items with ROM-based rt types (lower/upper limb)
+    return ['lower_ext','upper_ext','hand','foot','finger_thumb','finger_index','finger_middle','finger_ring','finger_little','toe_great','toe_second','toe_other'].includes(item.rt);
+  });
+
+  const warns = [];
+  if (hasGait && hasMSKJoint) {
+    warns.push('<strong>Uyarı:</strong> Yürüyüş Bozukluğu (Tablo 3.4) başka eklem/ekstremite skorlarıyla <strong>birleştirilmez</strong> — EK-2 uyarınca yalnız başına kullanılır.');
+  }
+  if (warns.length) {
+    wb.innerHTML = `<span class="wico">⚠️</span><div>${warns.join('<br>')}</div>`;
+    wb.style.display = 'flex';
+  } else {
+    wb.style.display = 'none';
+  }
 }
 
 function clearAll(){
