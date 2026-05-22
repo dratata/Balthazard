@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Balthazard — Engel Oranı Hesaplama</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -25,7 +25,7 @@
   --radius:12px;--radius-sm:8px;--radius-xs:6px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.5;}
+body{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.5;}
 
 /* ── HEADER ── */
 header{
@@ -69,15 +69,20 @@ header{
 .fg input:focus,.fg select:focus{border-color:var(--brand-l);box-shadow:0 0 0 3px var(--brand-ring);}
 
 /* ── BRANCH TABS ── */
-.btabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;padding:2px;}
+.btabs{
+  display:flex;flex-wrap:nowrap;gap:5px;margin-bottom:14px;padding:2px 2px 6px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.btabs::-webkit-scrollbar{display:none;}
 .btab{
-  display:flex;align-items:center;gap:5px;padding:5px 11px;
+  display:flex;align-items:center;gap:5px;padding:6px 12px;
   border-radius:20px;border:1.5px solid var(--card-border);
   background:var(--card);cursor:pointer;font-size:.73rem;font-weight:600;
-  color:var(--ink3);transition:all .14s;white-space:nowrap;
+  color:var(--ink3);transition:all .14s;white-space:nowrap;flex-shrink:0;
 }
 .btab:hover{border-color:var(--brand-l);color:var(--brand);background:var(--brand-bg);}
-.btab.active{color:#fff;border-color:transparent;}
+.btab.active{color:#fff;border-color:transparent;box-shadow:0 2px 6px rgba(0,0,0,.18);}
 .btab .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 .btab:not(.active) .dot{background:currentColor;}
 
@@ -106,6 +111,7 @@ header{
   color:var(--brand);padding:10px 4px 4px;
   border-bottom:1.5px solid var(--brand-ring);margin-bottom:3px;
   display:flex;align-items:center;gap:6px;
+  position:sticky;top:0;background:var(--card);z-index:1;
 }
 .cath-count{background:var(--brand-bg);color:var(--brand);border-radius:10px;padding:0 6px;font-size:.6rem;font-weight:700;}
 
@@ -113,10 +119,11 @@ header{
   display:flex;align-items:flex-start;gap:8px;padding:8px 10px;
   border-radius:var(--radius-xs);border:1.5px solid transparent;
   background:transparent;cursor:pointer;transition:all .12s;
+  min-height:44px;/* touch target */
 }
 .ditem:hover{border-color:var(--brand-ring);background:var(--brand-bg);}
 .ditem.sel{border-color:#93c5fd;background:#eff6ff;}
-.ditem input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:pointer;flex-shrink:0;margin-top:2px;}
+.ditem input[type=checkbox]{width:16px;height:16px;accent-color:var(--brand);cursor:pointer;flex-shrink:0;margin-top:3px;}
 
 .dname{flex:1;min-width:0;}
 .dname-title{font-size:.82rem;line-height:1.35;color:var(--ink);font-weight:500;}
@@ -215,23 +222,29 @@ header{
 .fstep .fl{font-weight:700;color:var(--brand);min-width:24px;font-size:.7rem;}
 
 /* ── RESULT BOX ── */
-.rbox{border-radius:var(--radius);padding:20px;text-align:center;transition:all .35s;}
+.rbox{border-radius:var(--radius);padding:24px 20px;text-align:center;transition:background .4s,box-shadow .4s;}
 .rbox.empty{background:var(--bg);border:2px dashed var(--bg2);}
 .rbox.active{
   background:linear-gradient(135deg,var(--brand-d) 0%,var(--brand) 60%,#2563eb 100%);
   color:#fff;box-shadow:var(--shadow-lg);
 }
-.rpct{font-size:3.2rem;font-weight:800;line-height:1;letter-spacing:-.03em;}
-.rpct-unit{font-size:1.6rem;font-weight:700;opacity:.8;}
-.rlabel{font-size:.78rem;opacity:.8;margin:6px 0 14px;letter-spacing:.01em;}
-.rbar-wrap{background:rgba(255,255,255,.15);border-radius:10px;height:6px;margin:0 0 14px;overflow:hidden;}
-.rbar{height:100%;border-radius:10px;background:rgba(255,255,255,.9);transition:width .5s cubic-bezier(.4,0,.2,1);}
-.rcls{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:.01em;}
-.rcls.c0{background:var(--green-bg);color:var(--green);}
-.rcls.c1{background:var(--amber-bg);color:var(--amber);}
-.rcls.c2{background:var(--orange-bg);color:var(--orange);}
-.rcls.c3{background:var(--rose-bg);color:var(--rose);}
-.rcls.c4{background:var(--purple-bg);color:var(--purple);}
+.rpct{font-size:3.4rem;font-weight:800;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums;}
+.rpct-unit{font-size:1.7rem;font-weight:700;opacity:.75;vertical-align:super;font-size:1.2rem;margin-right:2px;}
+.rlabel{font-size:.76rem;opacity:.75;margin:8px 0 16px;letter-spacing:.015em;}
+.rbar-wrap{background:rgba(255,255,255,.18);border-radius:10px;height:8px;margin:0 0 16px;overflow:hidden;}
+.rbar{height:100%;border-radius:10px;background:rgba(255,255,255,.85);transition:width .55s cubic-bezier(.4,0,.2,1);}
+/* classification chip — always has own bg so readable on any background */
+.rcls{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 16px;border-radius:20px;
+  font-size:.75rem;font-weight:700;letter-spacing:.01em;
+  box-shadow:0 1px 4px rgba(0,0,0,.12);
+}
+.rcls.c0{background:#fff;color:var(--green);border:1.5px solid #bbf7d0;}
+.rcls.c1{background:#fff;color:#b45309;border:1.5px solid #fde68a;}
+.rcls.c2{background:#fff;color:#c2410c;border:1.5px solid #fed7aa;}
+.rcls.c3{background:#fff;color:#be123c;border:1.5px solid #fecdd3;}
+.rcls.c4{background:#fff;color:#6d28d9;border:1.5px solid #ddd6fe;}
 
 /* ── BUTTONS ── */
 .brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
@@ -259,6 +272,21 @@ header{
 }
 @keyframes slideUp{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
 .nores{text-align:center;color:var(--ink4);font-size:.82rem;padding:24px;line-height:1.8;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  header{padding:0 14px;}
+  .htitles h1{font-size:.9rem;}
+  .htitles p{display:none;}
+  .hbadge{display:none;}
+  .wrap{padding:12px 10px 60px;}
+  .cb{padding:12px 14px;}
+  .pgrid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;}
+  .dlist{max-height:340px;}
+  .rpct{font-size:2.6rem;}
+  .brow{gap:6px;}
+  .btn{padding:8px 12px;font-size:.76rem;}
+}
 
 /* ── PRINT ── */
 @media print{
@@ -322,7 +350,7 @@ header{
           <div class="btabs no-print" id="branchTabs"></div>
           <div class="swrap no-print">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6.5" cy="6.5" r="4"/><path d="M11 11l2.5 2.5" stroke-linecap="round"/></svg>
-            <input type="text" id="search" placeholder="Tanı veya engel adı ara..." oninput="onSearch(this)"/>
+            <input type="text" id="search" placeholder="Tanı veya engel adı ara…  (Ctrl+K)" oninput="onSearch(this)"/>
             <button class="sclear" id="sclear" onclick="clearSearch()" title="Temizle">×</button>
           </div>
           <div class="dlist no-print" id="dlist"></div>
@@ -1591,6 +1619,20 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('pDate').valueAsDate = new Date();
   renderBranchTabs();
   renderList();
+
+  // Escape → arama temizle
+  document.getElementById('search').addEventListener('keydown', e => {
+    if (e.key === 'Escape') clearSearch();
+  });
+
+  // Ctrl/Cmd+K → arama kutusuna odaklan
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      document.getElementById('search').select();
+      document.getElementById('search').focus();
+    }
+  });
 });
 
 // ═══════════════════════════════════════════════════
@@ -1846,10 +1888,28 @@ function recalc() {
   const cls = getClass(final);
   rb.className='rbox active';
   rb.innerHTML=`
-    <div class="rpct"><span class="rpct-unit">%</span>${final}</div>
+    <div class="rpct" id="rpctNum"><span class="rpct-unit">%</span><span id="rpctVal">0</span></div>
     <div class="rlabel">Birleşik Engel Oranı · Balthazard Formülü</div>
-    <div class="rbar-wrap"><div class="rbar" style="width:${final}%"></div></div>
+    <div class="rbar-wrap"><div class="rbar" id="rbarEl" style="width:0%"></div></div>
     <div class="rcls ${cls.css}">${cls.label}</div>`;
+  // count-up animation
+  requestAnimationFrame(() => {
+    const el = document.getElementById('rpctVal');
+    const bar = document.getElementById('rbarEl');
+    if (!el) return;
+    bar && (bar.style.width = final + '%');
+    let start = null;
+    const dur = 500;
+    const from = 0;
+    function step(ts) {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / dur, 1);
+      const ease = p < .5 ? 2*p*p : -1+(4-2*p)*p; // ease-in-out quad
+      el.textContent = Math.round(from + (final - from) * ease);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
 }
 
 function getClass(p){
