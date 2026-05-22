@@ -290,12 +290,47 @@ header{
 
 /* ── PRINT ── */
 @media print{
-  header,.btabs,.swrap,.dlist,.cath,.brow,.finfo,.hbadge,.no-print{display:none!important;}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  header,.btabs,.swrap,.dlist,.cath,.brow,.finfo,.hbadge,.no-print,
+  #stepsCard,#sclear{display:none!important;}
+
+  body{background:#fff;font-size:11px;color:#0f172a;}
+  .wrap{padding:0;}
   .grid{grid-template-columns:1fr;}
-  .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid;margin-bottom:10px;}
-  body{background:#fff;font-size:12px;}
-  .rpct{font-size:2rem;}
-  .rbox.active{background:#1e40af!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+
+  /* Baskı başlık alanı */
+  body::before{
+    content:'Engelli Sağlık Kurulu — Balthazard Engel Oranı Raporu';
+    display:block;font-size:13px;font-weight:700;text-align:center;
+    border-bottom:2px solid #1e40af;padding-bottom:8px;margin-bottom:14px;
+    color:#1e40af;letter-spacing:.02em;
+  }
+
+  .card{box-shadow:none!important;border:1px solid #d1d5db;break-inside:avoid;margin-bottom:10px;border-radius:6px;}
+  .ch{background:#f8fafc!important;color:#0f172a!important;border-bottom:1px solid #d1d5db;padding:8px 14px;font-size:.75rem;}
+  .cb{padding:10px 14px;}
+
+  /* Hasta bilgileri kompakt */
+  .pgrid{grid-template-columns:repeat(4,1fr);gap:8px;}
+  .fg label{font-size:.6rem;}
+  .fg input,.fg select{border:none;border-bottom:1px solid #d1d5db;border-radius:0;padding:2px 0;font-size:.78rem;}
+
+  /* Seçili liste */
+  .sitem{border:1px solid #e2e8f0;border-radius:4px;margin-bottom:4px;break-inside:avoid;}
+  .sitem-top{padding:6px 10px;}
+  .chain{padding:4px 10px 6px;background:#f8fafc;}
+  .cstep-box{font-size:.62rem;}
+  .cstep-box.final{background:#1e40af!important;color:#fff!important;}
+
+  /* Sonuç kutusu */
+  .rbox.active{
+    background:#1e40af!important;color:#fff!important;
+    border-radius:8px;padding:16px;
+  }
+  .rpct{font-size:2.4rem;}
+  .rbar-wrap{background:rgba(255,255,255,.25)!important;}
+  .rbar{background:rgba(255,255,255,.9)!important;}
+  .rcls{background:#fff!important;font-size:.72rem;}
 }
 </style>
 </head>
@@ -1612,13 +1647,48 @@ hemato:[
 let curBranch = 'msk';
 let sel = {}; // { id: { name, branch, sub, rt, rp } }
 
+const LS_KEY = 'balthazard_session';
+
+function saveSession() {
+  try {
+    const pFields = ['pName','pTC','pDOB','pGender','pInst','pDate','pDoc','pSpec'];
+    const patient = {};
+    pFields.forEach(id => { patient[id] = document.getElementById(id)?.value || ''; });
+    localStorage.setItem(LS_KEY, JSON.stringify({ sel, patient }));
+  } catch(e) {}
+}
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.sel) sel = data.sel;
+    if (data.patient) {
+      Object.entries(data.patient).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el && val) el.value = val;
+      });
+    }
+  } catch(e) {}
+}
+
 // ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('pDate').valueAsDate = new Date();
+  loadSession();
   renderBranchTabs();
   renderList();
+  renderSelPanel();
+  recalc();
+
+  // Hasta alanlarında değişiklik → kaydet
+  ['pName','pTC','pDOB','pGender','pInst','pDate','pDoc','pSpec'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', saveSession);
+    document.getElementById(id)?.addEventListener('change', saveSession);
+  });
 
   // Escape → arama temizle
   document.getElementById('search').addEventListener('keydown', e => {
@@ -1760,7 +1830,7 @@ function toggleItem(id) {
       rp: item.rp,
     };
   }
-  renderList(); renderSelPanel(); recalc();
+  renderList(); renderSelPanel(); recalc(); saveSession();
 }
 
 function toggleItemSide(baseId, side) {
@@ -1778,12 +1848,12 @@ function toggleItemSide(baseId, side) {
       side: side,
     };
   }
-  renderList(); renderSelPanel(); recalc();
+  renderList(); renderSelPanel(); recalc(); saveSession();
 }
 
 function updateRp(id, val) {
   const v = Math.min(100, Math.max(0, parseInt(val,10)||0));
-  if (sel[id]) { sel[id].rp = v; renderSelPanel(); recalc(); }
+  if (sel[id]) { sel[id].rp = v; renderSelPanel(); recalc(); saveSession(); }
 }
 
 function updateBilatRp(baseId, val) {
@@ -1792,7 +1862,7 @@ function updateBilatRp(baseId, val) {
     const cid = baseId+'_'+s;
     if (sel[cid]) sel[cid].rp = v;
   });
-  renderSelPanel(); recalc();
+  renderSelPanel(); recalc(); saveSession();
 }
 
 // ═══════════════════════════════════════════════════
@@ -1845,6 +1915,7 @@ function removeItem(id) {
   renderList();
   renderSelPanel();
   recalc();
+  saveSession();
 }
 
 // ═══════════════════════════════════════════════════
@@ -1955,6 +2026,7 @@ function clearAll(){
   renderList();
   renderSelPanel();
   recalc();
+  saveSession();
   showToast('Tüm seçimler temizlendi.','success');
 }
 
