@@ -2162,20 +2162,16 @@ const ROM_CATS = ['ROM', 'Tablo 1.4', 'Tablo 1.5', 'Tablo 1.6'];
 function updateWarnings() {
   const wb = document.getElementById('warnBox');
   if (!wb) return;
-  const ids = Object.keys(sel);
-  const hasGait = ids.some(id => GAIT_IDS.has(id.replace(/_[LR]$/,'')));
-  const hasMSKJoint = ids.some(id => {
-    const base = id.replace(/_[LR]$/,'');
-    if (GAIT_IDS.has(base)) return false;
-    const item = findItem(base);
-    if (!item) return false;
-    // MSK items with ROM-based rt types (lower/upper limb)
-    return ['lower_ext','upper_ext','hand','foot','finger_thumb','finger_index','finger_middle','finger_ring','finger_little','toe_great','toe_second','toe_other'].includes(item.rt);
+  const MSK_LABEL = BRANCHES.find(b=>b.id==='msk')?.label||'Ortopedi/FTR';
+  const entries = Object.entries(sel);
+  const hasGait = entries.some(([id]) => GAIT_IDS.has(id.replace(/_[LR]$/,'')));
+  const hasOtherMSK = entries.some(([id, it]) => {
+    return it.branch === MSK_LABEL && !GAIT_IDS.has(id.replace(/_[LR]$/,''));
   });
 
   const warns = [];
-  if (hasGait && hasMSKJoint) {
-    warns.push('<strong>Uyarı:</strong> Yürüyüş Bozukluğu (Tablo 3.4) başka eklem/ekstremite skorlarıyla <strong>birleştirilmez</strong> — EK-2 uyarınca yalnız başına kullanılır.');
+  if (hasGait && hasOtherMSK) {
+    warns.push('<strong>Uyarı:</strong> Yürüyüş Bozukluğu (Tablo 3.4) diğer MSK eklem/omurga skorlarıyla <strong>birleştirilmez</strong> — EK-2 uyarınca yalnız başına kullanılır.');
   }
   if (warns.length) {
     wb.innerHTML = `<span class="wico">⚠️</span><div>${warns.join('<br>')}</div>`;
