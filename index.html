@@ -3,128 +3,298 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Balthazard Engel Oranı Hesaplama</title>
+<title>Balthazard — Engel Oranı Hesaplama</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--p:#1a5276;--pl:#2980b9;--pd:#154360;--bg:#f0f4f8;--card:#fff;--bdr:#d5e1ea;--txt:#1a252f;--muted:#6c8ea4;--tagbg:#eaf4fb;}
+:root{
+  --ink:#0f172a;--ink2:#334155;--ink3:#64748b;--ink4:#94a3b8;
+  --bg:#f1f5f9;--bg2:#e2e8f0;
+  --card:#ffffff;--card-border:#e2e8f0;
+  --brand:#1e40af;--brand-l:#3b82f6;--brand-d:#1e3a8a;
+  --brand-bg:#eff6ff;--brand-ring:#bfdbfe;
+  --green:#166534;--green-bg:#dcfce7;
+  --amber:#92400e;--amber-bg:#fef3c7;
+  --orange:#9a3412;--orange-bg:#ffedd5;
+  --rose:#9f1239;--rose-bg:#ffe4e6;
+  --purple:#581c87;--purple-bg:#f3e8ff;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+  --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 15px rgba(0,0,0,.1),0 4px 6px rgba(0,0,0,.05);
+  --radius:12px;--radius-sm:8px;--radius-xs:6px;
+}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;font-size:14px;}
-header{background:linear-gradient(135deg,var(--pd),var(--p) 60%,var(--pl));color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.18);}
-header svg{width:38px;height:38px;flex-shrink:0;}
-header h1{font-size:1.15rem;font-weight:700;}
-header p{font-size:.72rem;opacity:.85;}
-header .hbadge{margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:5px 12px;font-size:.72rem;white-space:nowrap;flex-shrink:0;}
-.wrap{max-width:1380px;margin:0 auto;padding:18px 12px 60px;}
-.grid{display:grid;grid-template-columns:1fr 410px;gap:16px;align-items:start;}
-@media(max-width:960px){.grid{grid-template-columns:1fr;}}
-.card{background:var(--card);border:1px solid var(--bdr);border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden;margin-bottom:14px;}
-.ch{background:linear-gradient(90deg,var(--p),var(--pl));color:#fff;padding:10px 16px;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:7px;}
-.ch .cbadge{background:rgba(255,255,255,.25);border-radius:10px;padding:1px 8px;font-size:.7rem;margin-left:auto;}
-.cb{padding:14px 16px;}
-/* patient */
-.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;}
-.fg label{display:block;font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;}
-.fg input,.fg select{width:100%;border:1.5px solid var(--bdr);border-radius:6px;padding:7px 9px;font-size:.84rem;color:var(--txt);outline:none;transition:border-color .2s;}
-.fg input:focus,.fg select:focus{border-color:var(--pl);}
-/* branch tabs */
-.btabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
-.btab{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:7px;border:1.5px solid var(--bdr);background:#fff;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--muted);transition:all .15s;}
-.btab:hover{border-color:var(--pl);color:var(--p);}
-.btab.active{background:var(--p);border-color:var(--p);color:#fff;}
-.btab .dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.8;}
-/* search */
-.swrap{position:relative;margin-bottom:10px;}
-.swrap input{width:100%;border:1.5px solid var(--bdr);border-radius:7px;padding:8px 10px 8px 32px;font-size:.84rem;outline:none;transition:border-color .2s;}
-.swrap input:focus{border-color:var(--pl);}
-.sico{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem;}
-/* list */
-.dlist{max-height:440px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;padding-right:3px;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.5;}
+
+/* ── HEADER ── */
+header{
+  background:linear-gradient(135deg,var(--brand-d) 0%,var(--brand) 55%,#2563eb 100%);
+  color:#fff;padding:0 24px;height:64px;
+  display:flex;align-items:center;gap:16px;
+  box-shadow:0 2px 12px rgba(30,64,175,.35);
+  position:sticky;top:0;z-index:200;
+}
+.hlogo{width:36px;height:36px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hlogo svg{width:20px;height:20px;}
+.htitles h1{font-size:1rem;font-weight:700;letter-spacing:-.01em;}
+.htitles p{font-size:.72rem;opacity:.75;margin-top:1px;}
+.hbadge{margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 12px;font-size:.7rem;font-weight:600;letter-spacing:.02em;white-space:nowrap;}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1440px;margin:0 auto;padding:20px 16px 80px;}
+.grid{display:grid;grid-template-columns:1fr 420px;gap:18px;align-items:start;}
+@media(max-width:980px){.grid{grid-template-columns:1fr;}}
+
+/* ── CARD ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;}
+.ch{padding:12px 18px;font-size:.8rem;font-weight:700;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--card-border);color:var(--ink2);letter-spacing:.01em;text-transform:uppercase;}
+.ch .ico{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
+.ch .ico-blue{background:var(--brand-bg);}
+.ch .ico-green{background:#dcfce7;}
+.ch .ico-amber{background:#fef3c7;}
+.ch .cbadge{margin-left:auto;background:var(--brand);color:#fff;border-radius:20px;padding:2px 10px;font-size:.7rem;font-weight:700;letter-spacing:.01em;}
+.cb{padding:16px 18px;}
+
+/* ── PATIENT FORM ── */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fg label{font-size:.7rem;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+.fg input,.fg select{
+  border:1.5px solid var(--card-border);border-radius:var(--radius-xs);
+  padding:8px 10px;font-size:.84rem;color:var(--ink);background:var(--card);
+  outline:none;transition:border-color .18s,box-shadow .18s;
+  font-family:inherit;
+}
+.fg input:focus,.fg select:focus{border-color:var(--brand-l);box-shadow:0 0 0 3px var(--brand-ring);}
+
+/* ── BRANCH TABS ── */
+.btabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;padding:2px;}
+.btab{
+  display:flex;align-items:center;gap:5px;padding:5px 11px;
+  border-radius:20px;border:1.5px solid var(--card-border);
+  background:var(--card);cursor:pointer;font-size:.73rem;font-weight:600;
+  color:var(--ink3);transition:all .14s;white-space:nowrap;
+}
+.btab:hover{border-color:var(--brand-l);color:var(--brand);background:var(--brand-bg);}
+.btab.active{color:#fff;border-color:transparent;}
+.btab .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.btab:not(.active) .dot{background:currentColor;}
+
+/* ── SEARCH ── */
+.swrap{position:relative;margin-bottom:12px;}
+.swrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink4);width:15px;height:15px;pointer-events:none;}
+.swrap input{
+  width:100%;border:1.5px solid var(--card-border);border-radius:var(--radius-sm);
+  padding:9px 36px 9px 34px;font-size:.84rem;outline:none;background:#fafcff;
+  transition:border-color .18s,box-shadow .18s;font-family:inherit;color:var(--ink);
+}
+.swrap input:focus{border-color:var(--brand-l);box-shadow:0 0 0 3px var(--brand-ring);background:#fff;}
+.swrap input::placeholder{color:var(--ink4);}
+.sclear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ink4);font-size:1.1rem;line-height:1;display:none;padding:2px;}
+.sclear:hover{color:var(--ink2);}
+
+/* ── LIST ── */
+.dlist{max-height:460px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;padding-right:2px;}
 .dlist::-webkit-scrollbar{width:4px;}
-.dlist::-webkit-scrollbar-thumb{background:var(--pl);border-radius:10px;}
-.cath{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--p);padding:8px 3px 3px;border-bottom:1px solid var(--bdr);margin-bottom:2px;}
-.ditem{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;border:1.5px solid transparent;background:#f7fafd;cursor:pointer;transition:all .14s;}
-.ditem:hover{border-color:var(--pl);background:#eaf4fb;}
-.ditem.sel{border-color:var(--p);background:var(--tagbg);}
-.ditem input[type=checkbox]{width:15px;height:15px;accent-color:var(--p);cursor:pointer;flex-shrink:0;}
-.dname{flex:1;font-size:.81rem;line-height:1.3;}
-.dname .dsub{font-size:.7rem;color:var(--muted);display:block;}
-/* region badge in list */
-.rbadge{font-size:.65rem;background:#e8f4fd;color:var(--p);border:1px solid #b8d8f0;border-radius:4px;padding:1px 5px;white-space:nowrap;flex-shrink:0;}
-/* pct input */
-.pctl{display:flex;align-items:center;gap:4px;flex-shrink:0;}
-.pctl input[type=number]{width:52px;border:1.5px solid var(--bdr);border-radius:5px;padding:3px 5px;font-size:.8rem;text-align:center;outline:none;}
-.pctl input[type=number]:focus{border-color:var(--pl);}
-.pctl .psign{font-size:.72rem;color:var(--muted);font-weight:700;}
-/* selected panel */
-.selempty{color:var(--muted);font-size:.82rem;text-align:center;padding:20px 0;}
-.slist{display:flex;flex-direction:column;gap:7px;}
-.sitem{border:1.5px solid #c5dff0;border-radius:8px;background:var(--tagbg);overflow:hidden;}
-.sitem-top{display:flex;align-items:center;gap:7px;padding:7px 10px;}
-.sname{flex:1;font-size:.81rem;font-weight:600;line-height:1.25;}
-.sname .sbranch{font-size:.68rem;color:var(--muted);font-weight:400;display:block;}
-.sdel{background:none;border:none;cursor:pointer;color:#c0392b;font-size:1.1rem;line-height:1;padding:0 2px;opacity:.7;}
-.sdel:hover{opacity:1;}
-/* conversion chain */
-.chain{display:flex;align-items:center;flex-wrap:wrap;gap:3px;padding:5px 10px 7px;border-top:1px dashed #c5dff0;}
+.dlist::-webkit-scrollbar-track{background:transparent;}
+.dlist::-webkit-scrollbar-thumb{background:var(--bg2);border-radius:10px;}
+.dlist::-webkit-scrollbar-thumb:hover{background:var(--ink4);}
+
+.cath{
+  font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--brand);padding:10px 4px 4px;
+  border-bottom:1.5px solid var(--brand-ring);margin-bottom:3px;
+  display:flex;align-items:center;gap:6px;
+}
+.cath-count{background:var(--brand-bg);color:var(--brand);border-radius:10px;padding:0 6px;font-size:.6rem;font-weight:700;}
+
+.ditem{
+  display:flex;align-items:flex-start;gap:8px;padding:8px 10px;
+  border-radius:var(--radius-xs);border:1.5px solid transparent;
+  background:transparent;cursor:pointer;transition:all .12s;
+}
+.ditem:hover{border-color:var(--brand-ring);background:var(--brand-bg);}
+.ditem.sel{border-color:#93c5fd;background:#eff6ff;}
+.ditem input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand);cursor:pointer;flex-shrink:0;margin-top:2px;}
+
+.dname{flex:1;min-width:0;}
+.dname-title{font-size:.82rem;line-height:1.35;color:var(--ink);font-weight:500;}
+.ditem.sel .dname-title{color:var(--brand-d);font-weight:600;}
+.dsub{font-size:.69rem;color:var(--ink3);display:block;margin-top:2px;line-height:1.4;}
+
+.rbadge{
+  font-size:.62rem;background:var(--bg);color:var(--ink3);
+  border:1px solid var(--card-border);border-radius:4px;
+  padding:2px 6px;white-space:nowrap;flex-shrink:0;font-weight:500;
+  margin-top:2px;
+}
+.ditem.sel .rbadge{background:var(--brand-bg);color:var(--brand);border-color:var(--brand-ring);}
+
+.pctl{display:flex;align-items:center;gap:3px;flex-shrink:0;margin-top:1px;}
+.pctl input[type=number]{
+  width:48px;border:1.5px solid var(--card-border);border-radius:var(--radius-xs);
+  padding:3px 4px;font-size:.8rem;text-align:center;outline:none;
+  font-family:inherit;color:var(--ink);transition:border-color .15s;
+}
+.pctl input[type=number]:focus{border-color:var(--brand-l);}
+.pctl input[type=number]:disabled{background:var(--bg);color:var(--ink4);}
+.psign{font-size:.7rem;color:var(--ink3);font-weight:600;}
+
+/* side buttons */
+.sidebtn{
+  display:inline-flex;align-items:center;padding:3px 8px;
+  border-radius:5px;border:1.5px solid var(--card-border);
+  background:var(--card);cursor:pointer;font-size:.7rem;font-weight:700;
+  color:var(--ink3);transition:all .12s;
+}
+.sidebtn:hover{border-color:var(--brand-l);color:var(--brand);}
+.sidebtn.active{background:var(--brand);border-color:var(--brand);color:#fff;}
+.side-badge{font-size:.62rem;padding:1px 6px;border-radius:8px;font-weight:700;display:inline-block;vertical-align:middle;margin-right:2px;}
+.side-L{background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;}
+.side-R{background:#fce7f3;color:#9d174d;border:1px solid #f9a8d4;}
+
+/* ── SELECTED PANEL ── */
+.selempty{color:var(--ink4);font-size:.82rem;text-align:center;padding:24px 0;line-height:1.8;}
+.selempty-ico{font-size:1.8rem;display:block;margin-bottom:6px;}
+.slist{display:flex;flex-direction:column;gap:8px;}
+
+.sitem{
+  border:1.5px solid var(--card-border);border-radius:var(--radius-sm);
+  background:#fafcff;overflow:hidden;
+  transition:box-shadow .14s;
+}
+.sitem:hover{box-shadow:var(--shadow-md);}
+
+.sitem-top{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;}
+.sname{flex:1;font-size:.82rem;font-weight:600;line-height:1.3;color:var(--ink);}
+.sname .sbranch{
+  font-size:.65rem;color:var(--ink3);font-weight:500;
+  display:inline-flex;align-items:center;gap:3px;margin-left:6px;
+  background:var(--bg);padding:1px 6px;border-radius:8px;
+  border:1px solid var(--card-border);
+}
+.sitem-rp{font-size:.72rem;color:var(--ink3);white-space:nowrap;background:var(--bg);
+  border:1px solid var(--card-border);border-radius:5px;padding:2px 8px;font-weight:600;margin-top:1px;}
+.sdel{
+  background:none;border:none;cursor:pointer;
+  color:var(--ink4);font-size:1rem;line-height:1;
+  padding:2px 4px;border-radius:4px;transition:all .12s;flex-shrink:0;
+}
+.sdel:hover{color:#dc2626;background:#fee2e2;}
+
+.chain{
+  display:flex;align-items:center;flex-wrap:wrap;gap:4px;
+  padding:6px 12px 8px;border-top:1px solid var(--card-border);
+  background:var(--bg);
+}
 .cstep{display:flex;align-items:center;gap:3px;}
-.cstep-box{font-size:.68rem;padding:2px 6px;border-radius:4px;background:#ddeeff;color:#1a5276;border:1px solid #b8d8f0;white-space:nowrap;}
-.cstep-box.final{background:var(--p);color:#fff;border-color:var(--pd);font-weight:700;font-size:.72rem;}
-.carrow{font-size:.65rem;color:var(--muted);}
-/* formula info */
-.finfo{background:#fff8e1;border:1px solid #ffe082;border-radius:7px;padding:9px 13px;font-size:.76rem;color:#5d4037;line-height:1.6;}
-.finfo code{background:rgba(0,0,0,.07);padding:1px 4px;border-radius:3px;font-family:monospace;}
-/* steps */
-.fsteps{font-size:.75rem;color:var(--muted);background:#f7fafd;border:1px solid var(--bdr);border-radius:7px;padding:9px 12px;max-height:200px;overflow-y:auto;line-height:1.75;}
-.fstep{display:flex;gap:7px;align-items:baseline;}
-.fstep .fl{font-weight:700;color:var(--p);min-width:22px;}
-/* result */
-.rbox{border-radius:10px;padding:18px;text-align:center;transition:all .3s;}
-.rbox.empty{background:#f0f4f8;border:2px dashed var(--bdr);}
-.rbox.active{background:linear-gradient(135deg,var(--pd),var(--p));color:#fff;}
-.rpct{font-size:3rem;font-weight:800;line-height:1;margin-bottom:4px;}
-.rlabel{font-size:.84rem;opacity:.9;margin-bottom:10px;}
-.rcls{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.78rem;font-weight:700;}
-.rcls.c0{background:#e8f5e9;color:#2e7d32;}
-.rcls.c1{background:#fff8e1;color:#f57f17;}
-.rcls.c2{background:#fff3e0;color:#e65100;}
-.rcls.c3{background:#fce4ec;color:#880e4f;}
-.rcls.c4{background:#f3e5f5;color:#4a148c;}
-/* buttons */
-.brow{display:flex;gap:8px;flex-wrap:wrap;}
-.btn{display:flex;align-items:center;gap:5px;padding:8px 16px;border-radius:7px;border:none;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .16s;}
-.btn-p{background:var(--p);color:#fff;} .btn-p:hover{background:var(--pd);}
-.btn-d{background:#e74c3c;color:#fff;} .btn-d:hover{background:#c0392b;}
-.btn-o{background:#fff;color:var(--p);border:1.5px solid var(--p);} .btn-o:hover{background:var(--tagbg);}
-/* toast */
-.toast{position:fixed;bottom:20px;right:20px;background:var(--p);color:#fff;padding:9px 16px;border-radius:7px;font-size:.82rem;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:1000;animation:sli .3s ease;}
-@keyframes sli{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
-.nores{text-align:center;color:var(--muted);font-size:.82rem;padding:18px;}
-/* sol/sağ taraf butonları */
-.sidebtn{display:inline-flex;align-items:center;padding:3px 9px;border-radius:5px;border:1.5px solid var(--bdr);background:#fff;cursor:pointer;font-size:.72rem;font-weight:700;color:var(--muted);transition:all .14s;}
-.sidebtn:hover{border-color:var(--pl);color:var(--p);}
-.sidebtn.active{background:var(--p);border-color:var(--p);color:#fff;}
-.side-badge{font-size:.65rem;padding:1px 7px;border-radius:10px;font-weight:700;margin-right:3px;display:inline-block;vertical-align:middle;}
-.side-L{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;}
-.side-R{background:#fce4ec;color:#880e4f;border:1px solid #f48fb1;}
-/* print */
+.cstep-box{
+  font-size:.67rem;padding:2px 7px;border-radius:4px;
+  background:var(--card);color:var(--ink2);
+  border:1px solid var(--card-border);white-space:nowrap;font-weight:500;
+}
+.cstep-box.final{
+  background:var(--brand);color:#fff;border-color:var(--brand-d);
+  font-weight:700;font-size:.7rem;padding:2px 9px;
+}
+.carrow{font-size:.65rem;color:var(--ink4);}
+
+/* ── FORMULA INFO ── */
+.finfo{
+  background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm);
+  padding:10px 14px;font-size:.75rem;color:#78350f;line-height:1.65;
+  margin-bottom:16px;
+}
+.finfo strong{color:#92400e;}
+.finfo code{background:rgba(0,0,0,.08);padding:1px 5px;border-radius:3px;font-family:'Courier New',monospace;}
+
+/* ── STEPS ── */
+.fsteps{font-size:.75rem;color:var(--ink2);line-height:1.8;max-height:200px;overflow-y:auto;}
+.fstep{display:flex;gap:8px;align-items:baseline;padding:2px 0;}
+.fstep .fl{font-weight:700;color:var(--brand);min-width:24px;font-size:.7rem;}
+
+/* ── RESULT BOX ── */
+.rbox{border-radius:var(--radius);padding:20px;text-align:center;transition:all .35s;}
+.rbox.empty{background:var(--bg);border:2px dashed var(--bg2);}
+.rbox.active{
+  background:linear-gradient(135deg,var(--brand-d) 0%,var(--brand) 60%,#2563eb 100%);
+  color:#fff;box-shadow:var(--shadow-lg);
+}
+.rpct{font-size:3.2rem;font-weight:800;line-height:1;letter-spacing:-.03em;}
+.rpct-unit{font-size:1.6rem;font-weight:700;opacity:.8;}
+.rlabel{font-size:.78rem;opacity:.8;margin:6px 0 14px;letter-spacing:.01em;}
+.rbar-wrap{background:rgba(255,255,255,.15);border-radius:10px;height:6px;margin:0 0 14px;overflow:hidden;}
+.rbar{height:100%;border-radius:10px;background:rgba(255,255,255,.9);transition:width .5s cubic-bezier(.4,0,.2,1);}
+.rcls{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:.01em;}
+.rcls.c0{background:var(--green-bg);color:var(--green);}
+.rcls.c1{background:var(--amber-bg);color:var(--amber);}
+.rcls.c2{background:var(--orange-bg);color:var(--orange);}
+.rcls.c3{background:var(--rose-bg);color:var(--rose);}
+.rcls.c4{background:var(--purple-bg);color:var(--purple);}
+
+/* ── BUTTONS ── */
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 18px;border-radius:var(--radius-sm);border:none;
+  cursor:pointer;font-size:.8rem;font-weight:600;
+  transition:all .15s;font-family:inherit;
+}
+.btn-p{background:var(--brand);color:#fff;box-shadow:var(--shadow-sm);}
+.btn-p:hover{background:var(--brand-d);box-shadow:var(--shadow);}
+.btn-d{background:#fff;color:#dc2626;border:1.5px solid #fca5a5;}
+.btn-d:hover{background:#fee2e2;border-color:#f87171;}
+.btn-o{background:#fff;color:var(--brand);border:1.5px solid var(--brand-ring);}
+.btn-o:hover{background:var(--brand-bg);}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--ink);color:#fff;
+  padding:10px 18px;border-radius:var(--radius-sm);
+  font-size:.8rem;font-weight:600;box-shadow:var(--shadow-lg);
+  z-index:1000;animation:slideUp .28s cubic-bezier(.4,0,.2,1);
+  display:flex;align-items:center;gap:8px;
+}
+@keyframes slideUp{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+.nores{text-align:center;color:var(--ink4);font-size:.82rem;padding:24px;line-height:1.8;}
+
+/* ── PRINT ── */
 @media print{
-  .btabs,.swrap,.dlist,.cath,.brow,.finfo,.hbadge,.no-print{display:none!important;}
+  header,.btabs,.swrap,.dlist,.cath,.brow,.finfo,.hbadge,.no-print{display:none!important;}
   .grid{grid-template-columns:1fr;}
-  .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid;}
-  body{background:#fff;}
-  .rpct{font-size:2.2rem;}
+  .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid;margin-bottom:10px;}
+  body{background:#fff;font-size:12px;}
+  .rpct{font-size:2rem;}
+  .rbox.active{background:#1e40af!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 }
 </style>
 </head>
 <body>
+
 <header>
-  <svg viewBox="0 0 38 38" fill="none"><circle cx="19" cy="19" r="18" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><path d="M19 7v4M19 27v4M7 19h4M27 19h4" stroke="white" stroke-width="2" stroke-linecap="round"/><circle cx="19" cy="19" r="6" fill="rgba(255,255,255,.9)"/><path d="M17 19h4M19 17v4" stroke="#1a5276" stroke-width="2" stroke-linecap="round"/></svg>
-  <div><h1>Balthazard Engel Oranı Hesaplama</h1><p>Engelli Sağlık Kurulu — Hiyerarşik Dönüşümlü Birleştirme</p></div>
+  <div class="hlogo">
+    <svg viewBox="0 0 20 20" fill="none">
+      <path d="M10 2v4M10 14v4M2 10h4M14 10h4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="10" cy="10" r="3" fill="white"/>
+    </svg>
+  </div>
+  <div class="htitles">
+    <h1>Balthazard Engel Oranı Hesaplama</h1>
+    <p>Engelli Sağlık Kurulu · Hiyerarşik Dönüşümlü Birleştirme</p>
+  </div>
   <span class="hbadge no-print">T.C. 2022 Yönetmeliği</span>
 </header>
+
 <div class="wrap">
+
   <!-- Hasta Bilgileri -->
   <div class="card">
-    <div class="ch">👤 Hasta Bilgileri</div>
+    <div class="ch">
+      <span class="ico ico-blue">👤</span>
+      Hasta Bilgileri
+    </div>
     <div class="cb">
       <div class="pgrid">
         <div class="fg"><label>Ad Soyad</label><input id="pName" type="text" placeholder="Hasta adı soyadı"/></div>
@@ -138,42 +308,76 @@ header .hbadge{margin-left:auto;background:rgba(255,255,255,.15);border:1px soli
       </div>
     </div>
   </div>
+
   <div class="grid">
     <!-- SOL: Branş + Liste -->
     <div>
       <div class="card">
-        <div class="ch">🏥 Branş ve Engel Seçimi <span class="cbadge no-print" id="branchLabel">MSK</span></div>
+        <div class="ch">
+          <span class="ico ico-blue">🏥</span>
+          Branş ve Engel Seçimi
+          <span class="cbadge no-print" id="branchLabel">MSK</span>
+        </div>
         <div class="cb">
           <div class="btabs no-print" id="branchTabs"></div>
-          <div class="swrap no-print"><span class="sico">🔍</span><input type="text" id="search" placeholder="Tanı / engel ara..." oninput="renderList()"/></div>
+          <div class="swrap no-print">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6.5" cy="6.5" r="4"/><path d="M11 11l2.5 2.5" stroke-linecap="round"/></svg>
+            <input type="text" id="search" placeholder="Tanı veya engel adı ara..." oninput="onSearch(this)"/>
+            <button class="sclear" id="sclear" onclick="clearSearch()" title="Temizle">×</button>
+          </div>
           <div class="dlist no-print" id="dlist"></div>
         </div>
       </div>
     </div>
+
     <!-- SAĞ: Seçili + Sonuç -->
     <div>
       <div class="card">
-        <div class="ch">✔ Seçili Engeller <span class="cbadge" id="selCount">0</span></div>
-        <div class="cb"><div id="selPanel"><div class="selempty">Henüz engel seçilmedi.</div></div></div>
-      </div>
-      <div class="finfo no-print">
-        <strong>Dönüşüm zinciri:</strong> Her engel kendi anatomik düzeyinde belirlenir; parmak→el→üst eks.→tüm vücut, ayak parmağı→ayak→alt eks.→tüm vücut zinciriyle otomatik dönüştürülür.<br>
-        <strong>Balthazard:</strong> <code>1−(1−E₁)(1−E₂)…(1−Eₙ)</code> — her yeni engel kalan sağlam kapasiteden hesaplanır.
-      </div>
-      <div class="card" id="stepsCard" style="display:none">
-        <div class="ch">📐 Balthazard Adımları</div>
-        <div class="cb"><div class="fsteps" id="fsteps"></div></div>
-      </div>
-      <div class="card">
-        <div class="ch">📊 Sonuç</div>
+        <div class="ch">
+          <span class="ico ico-green">✔</span>
+          Seçili Engeller
+          <span class="cbadge" id="selCount">0</span>
+        </div>
         <div class="cb">
-          <div id="rbox" class="rbox empty"><div style="color:var(--muted);font-size:.84rem;padding:14px 0">Engel seçildiğinde otomatik hesaplanır.</div></div>
+          <div id="selPanel"><div class="selempty"><span class="selempty-ico">📋</span>Henüz engel seçilmedi.<br><span style="font-size:.75rem">Soldan tanı seçerek başlayın.</span></div></div>
         </div>
       </div>
+
+      <div class="finfo no-print">
+        <strong>Dönüşüm zinciri:</strong> Her engel anatomik düzeyinde belirlenir; parmak→el→üst eks.→TVE, ayak→alt eks.→TVE zincirleriyle otomatik dönüştürülür.<br>
+        <strong>Balthazard:</strong> <code>1−(1−E₁)(1−E₂)…(1−Eₙ)</code> — her yeni engel kalan sağlam kapasiteden hesaplanır.
+      </div>
+
+      <div class="card" id="stepsCard" style="display:none">
+        <div class="ch"><span class="ico ico-amber">📐</span>Balthazard Adımları</div>
+        <div class="cb"><div class="fsteps" id="fsteps"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><span class="ico ico-blue">📊</span>Sonuç</div>
+        <div class="cb">
+          <div id="rbox" class="rbox empty">
+            <div style="color:var(--ink4);font-size:.83rem;padding:16px 0;line-height:1.8">
+              <span style="font-size:1.8rem;display:block;margin-bottom:6px">🔢</span>
+              Engel seçildiğinde otomatik hesaplanır.
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="brow no-print">
-        <button class="btn btn-p" onclick="window.print()">🖨 Yazdır / PDF</button>
-        <button class="btn btn-o" onclick="copyResult()">📋 Kopyala</button>
-        <button class="btn btn-d" onclick="clearAll()">🗑 Temizle</button>
+        <button class="btn btn-p" onclick="window.print()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="10" height="7" rx="1"/><path d="M5 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/><path d="M5 11h6" stroke-linecap="round"/></svg>
+          Yazdır / PDF
+        </button>
+        <button class="btn btn-o" onclick="copyResult()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="5" width="8" height="9" rx="1"/><path d="M3 11V3a1 1 0 011-1h7"/></svg>
+          Kopyala
+        </button>
+        <button class="btn btn-d" onclick="clearAll()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4h12M6 4V2h4v2M5 4l.5 9h5l.5-9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Temizle
+        </button>
       </div>
     </div>
   </div>
@@ -1393,11 +1597,15 @@ document.addEventListener('DOMContentLoaded', () => {
 // BRANCHES
 // ═══════════════════════════════════════════════════
 function renderBranchTabs() {
-  document.getElementById('branchTabs').innerHTML = BRANCHES.map(b =>
-    `<button class="btab ${b.id===curBranch?'active':''}" onclick="switchBranch('${b.id}')">
-       <span class="dot" style="background:${b.color}"></span>${b.label}
-     </button>`
-  ).join('');
+  document.getElementById('branchTabs').innerHTML = BRANCHES.map(b => {
+    const isActive = b.id === curBranch;
+    const style = isActive
+      ? `background:${b.color};border-color:${b.color};`
+      : '';
+    return `<button class="btab ${isActive?'active':''}" style="${style}" onclick="switchBranch('${b.id}')">
+       <span class="dot" style="background:${isActive?'rgba(255,255,255,.8)':b.color}"></span>${b.label}
+     </button>`;
+  }).join('');
   document.getElementById('branchLabel').textContent =
     BRANCHES.find(b=>b.id===curBranch)?.label||'';
 }
@@ -1411,6 +1619,27 @@ function switchBranch(id){
 // ═══════════════════════════════════════════════════
 // DISABILITY LIST
 // ═══════════════════════════════════════════════════
+function onSearch(input) {
+  const cl = document.getElementById('sclear');
+  if (cl) cl.style.display = input.value ? 'block' : 'none';
+  renderList();
+}
+function clearSearch() {
+  const inp = document.getElementById('search');
+  inp.value = '';
+  const cl = document.getElementById('sclear');
+  if (cl) cl.style.display = 'none';
+  inp.focus();
+  renderList();
+}
+
+function highlight(text, q) {
+  if (!q) return text;
+  const idx = text.toLowerCase().indexOf(q);
+  if (idx < 0) return text;
+  return text.slice(0,idx) + `<mark style="background:#fef08a;border-radius:2px;padding:0 1px">${text.slice(idx,idx+q.length)}</mark>` + text.slice(idx+q.length);
+}
+
 function renderList() {
   const q = document.getElementById('search').value.toLowerCase().trim();
   const cats = DATA[curBranch] || [];
@@ -1420,24 +1649,32 @@ function renderList() {
     const items = q ? cat.items.filter(i => i.name.toLowerCase().includes(q) || (i.sub||'').toLowerCase().includes(q)) : cat.items;
     if (!items.length) continue;
     any = true;
-    html += `<div class="cath">${cat.cat}</div>`;
+    html += `<div class="cath">${cat.cat}<span class="cath-count">${items.length}</span></div>`;
     for (const it of items) {
       const chain = RC[it.rt]||RC.whole;
+      const nameHl = highlight(it.name, q);
       if(isBilat(it.rt)){
         const selL=!!sel[it.id+'_L'], selR=!!sel[it.id+'_R'];
         const anySel=selL||selR;
         const rpShow=selL?sel[it.id+'_L'].rp:(selR?sel[it.id+'_R'].rp:it.rp);
         html+=`
           <div class="ditem ${anySel?'sel':''}" id="row_${it.id}">
-            <span class="dname">${it.name}${it.sub?`<span class="dsub">${it.sub}</span>`:''}</span>
+            <div class="dname">
+              <span class="dname-title">${nameHl}</span>
+              ${it.sub?`<span class="dsub">${it.sub}</span>`:''}
+            </div>
             <span class="rbadge">${chain.title}</span>
-            <span class="pctl" onclick="event.stopPropagation()" style="gap:3px">
-              <button class="sidebtn ${selL?'active':''}" onclick="toggleItemSide('${it.id}','L')">Sol</button>
-              <button class="sidebtn ${selR?'active':''}" onclick="toggleItemSide('${it.id}','R')">Sağ</button>
-              <input type="number" min="0" max="100" value="${rpShow}" id="pct_${it.id}"
-                ${anySel?'':'disabled'} style="width:46px"
-                onchange="updateBilatRp('${it.id}',this.value)"/>
-              <span class="psign">%</span>
+            <span class="pctl" onclick="event.stopPropagation()" style="gap:3px;flex-direction:column;align-items:flex-end">
+              <div style="display:flex;gap:3px">
+                <button class="sidebtn ${selL?'active':''}" onclick="toggleItemSide('${it.id}','L')">Sol</button>
+                <button class="sidebtn ${selR?'active':''}" onclick="toggleItemSide('${it.id}','R')">Sağ</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:3px">
+                <input type="number" min="0" max="100" value="${rpShow}" id="pct_${it.id}"
+                  ${anySel?'':'disabled'}
+                  onchange="updateBilatRp('${it.id}',this.value)"/>
+                <span class="psign">%</span>
+              </div>
             </span>
           </div>`;
       } else {
@@ -1446,7 +1683,10 @@ function renderList() {
         html+=`
           <div class="ditem ${isSel?'sel':''}" id="row_${it.id}" onclick="toggleItem('${it.id}')">
             <input type="checkbox" ${isSel?'checked':''} onclick="event.stopPropagation();toggleItem('${it.id}')"/>
-            <span class="dname">${it.name}${it.sub?`<span class="dsub">${it.sub}</span>`:''}</span>
+            <div class="dname">
+              <span class="dname-title">${nameHl}</span>
+              ${it.sub?`<span class="dsub">${it.sub}</span>`:''}
+            </div>
             <span class="rbadge">${chain.title}</span>
             <span class="pctl" onclick="event.stopPropagation()">
               <input type="number" min="0" max="100" value="${rp}" id="pct_${it.id}"
@@ -1458,7 +1698,7 @@ function renderList() {
       }
     }
   }
-  if (!any) html = `<div class="nores">Sonuç bulunamadı.</div>`;
+  if (!any) html = `<div class="nores">🔍 "<strong>${q}</strong>" için sonuç bulunamadı.</div>`;
   document.getElementById('dlist').innerHTML = html;
 }
 
@@ -1527,14 +1767,18 @@ function renderSelPanel() {
     const steps = chainSteps(it.rt, it.rp);
     const wp = wpPct(it.rt, it.rp);
     const sideLabel = it.side==='L'?'Sol':it.side==='R'?'Sağ':null;
+    const branchColor = BRANCHES.find(b=>b.label===it.branch)?.color||'#64748b';
     html += `
       <div class="sitem">
         <div class="sitem-top">
-          <span class="sname">
-            ${sideLabel?`<span class="side-badge side-${it.side}">${sideLabel}</span>`:''}
-            ${it.name}<span class="sbranch">${it.branch}</span>
-          </span>
-          <button class="sdel" onclick="removeItem('${id}')" title="Kaldır">×</button>
+          <div class="sname">
+            ${sideLabel?`<span class="side-badge side-${it.side}">${sideLabel}</span> `:''}${it.name}
+            <span class="sbranch" style="border-left:2px solid ${branchColor};">${it.branch}</span>
+          </div>
+          <span class="sitem-rp">%${it.rp}</span>
+          <button class="sdel" onclick="removeItem('${id}')" title="Kaldır">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>
+          </button>
         </div>
         <div class="chain">
           ${steps.map((s,i)=>{
@@ -1546,7 +1790,7 @@ function renderSelPanel() {
               ${!isFinal?'<span class="carrow">→</span>':''}
             </span>`;
           }).join('')}
-          ${steps.length>1?`<span style="font-size:.65rem;color:var(--muted);margin-left:6px">↑ Balthazard'a giren</span>`:''}
+          ${steps.length>1?`<span style="font-size:.62rem;color:var(--ink4);margin-left:4px;font-style:italic">TVE'ye giren</span>`:''}
         </div>
       </div>`;
   }
@@ -1576,12 +1820,12 @@ function recalc() {
   if (!items.length) {
     sc.style.display='none';
     rb.className='rbox empty';
-    rb.innerHTML='<div style="color:var(--muted);font-size:.84rem;padding:14px 0">Engel seçildiğinde otomatik hesaplanır.</div>';
+    rb.innerHTML='<div style="color:var(--ink4);font-size:.83rem;padding:16px 0;line-height:1.8"><span style="font-size:1.8rem;display:block;margin-bottom:6px">🔢</span>Engel seçildiğinde otomatik hesaplanır.</div>';
     return;
   }
 
   let rem = 1.0, cum = 0.0;
-  let stHtml = '<div style="font-size:.72rem;color:var(--muted);margin-bottom:6px">TVE girdileri büyükten küçüğe:</div>';
+  let stHtml = `<div style="font-size:.7rem;color:var(--ink3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.04em">TVE girdileri (büyükten küçüğe):</div>`;
   for (let i=0;i<items.length;i++) {
     const p = items[i].wp/100;
     const contrib = rem*p;
@@ -1590,8 +1834,8 @@ function recalc() {
     const cumP = Math.round(cum*100);
     stHtml += `<div class="fstep"><span class="fl">E${i+1}</span>
       <span>${items[i].name} — TVE <strong>%${items[i].wp}</strong>
-        ${i>0?`→ kalan kapasite üzerinden katkı: %${Math.round(contrib*100)}`:''}
-        → birleşik: <strong>%${cumP}</strong>
+        ${i>0?`→ katkı: %${Math.round(contrib*100)}`:''}
+        → birleşik: <strong style="color:var(--brand)">%${cumP}</strong>
       </span></div>`;
   }
 
@@ -1602,8 +1846,9 @@ function recalc() {
   const cls = getClass(final);
   rb.className='rbox active';
   rb.innerHTML=`
-    <div class="rpct">%${final}</div>
-    <div class="rlabel">Birleşik Engel Oranı (Balthazard Formülü)</div>
+    <div class="rpct"><span class="rpct-unit">%</span>${final}</div>
+    <div class="rlabel">Birleşik Engel Oranı · Balthazard Formülü</div>
+    <div class="rbar-wrap"><div class="rbar" style="width:${final}%"></div></div>
     <div class="rcls ${cls.css}">${cls.label}</div>`;
 }
 
@@ -1640,8 +1885,8 @@ function copyResult() {
     getClass(final).label,
   ];
   navigator.clipboard.writeText(lines.join('\n'))
-    .then(()=>showToast('Sonuç panoya kopyalandı!'))
-    .catch(()=>showToast('Kopyalama başarısız.'));
+    .then(()=>showToast('Sonuç panoya kopyalandı!','success'))
+    .catch(()=>showToast('Kopyalama başarısız.','error'));
 }
 
 function clearAll(){
@@ -1650,15 +1895,16 @@ function clearAll(){
   renderList();
   renderSelPanel();
   recalc();
-  showToast('Tüm seçimler temizlendi.');
+  showToast('Tüm seçimler temizlendi.','success');
 }
 
-function showToast(msg){
+function showToast(msg, type='info'){
+  const icons = {info:'ℹ️', success:'✅', error:'❌'};
   const t=document.createElement('div');
   t.className='toast';
-  t.textContent=msg;
+  t.innerHTML=`<span>${icons[type]||icons.info}</span><span>${msg}</span>`;
   document.body.appendChild(t);
-  setTimeout(()=>t.remove(),2800);
+  setTimeout(()=>{t.style.animation='slideUp .25s reverse';setTimeout(()=>t.remove(),240);},2600);
 }
 </script>
 </body>
