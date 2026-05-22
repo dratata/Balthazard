@@ -339,6 +339,51 @@ header{
   .btn{padding:8px 12px;font-size:.76rem;}
 }
 
+/* ── HEARING MODAL ── */
+.hmodal-overlay{
+  position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:500;
+  display:flex;align-items:center;justify-content:center;padding:16px;
+}
+.hmodal{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);
+  width:100%;max-width:540px;max-height:90vh;overflow-y:auto;
+  border:1px solid var(--card-border);
+}
+.hmodal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--card-border);
+  font-weight:700;font-size:.85rem;color:var(--ink);
+}
+.hmodal-close{
+  background:none;border:none;cursor:pointer;font-size:1.3rem;
+  color:var(--ink3);line-height:1;padding:2px 6px;border-radius:4px;
+}
+.hmodal-close:hover{background:var(--bg);color:var(--ink);}
+.hmodal-body{padding:16px 18px;}
+.hmodal-note{font-size:.74rem;color:var(--ink3);margin-bottom:14px;line-height:1.6;background:var(--brand-bg);border:1px solid var(--brand-ring);padding:8px 12px;border-radius:var(--radius-xs);}
+.hmodal-foot{padding:12px 18px;border-top:1px solid var(--card-border);display:flex;gap:8px;flex-wrap:wrap;}
+
+.hearing-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:480px){.hearing-grid{grid-template-columns:1fr;}}
+.hearing-ear{background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;border:1px solid var(--card-border);}
+.hearing-ear-label{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+.hearing-freqs{display:flex;flex-direction:column;gap:6px;}
+.hfq{display:flex;align-items:center;gap:6px;}
+.hfq label{font-size:.72rem;color:var(--ink3);font-weight:600;width:56px;flex-shrink:0;}
+.hfq input{flex:1;min-width:0;border:1.5px solid var(--card-border);border-radius:var(--radius-xs);padding:5px 8px;font-size:.82rem;outline:none;font-family:inherit;text-align:center;}
+.hfq input:focus{border-color:var(--brand-l);box-shadow:0 0 0 3px var(--brand-ring);}
+.hfq span{font-size:.7rem;color:var(--ink4);width:18px;}
+.hsum{font-size:.72rem;color:var(--ink3);text-align:right;margin-top:8px;font-weight:600;border-top:1px solid var(--card-border);padding-top:6px;}
+
+.hearing-result{
+  margin-top:16px;border-radius:var(--radius-sm);padding:14px 16px;
+  border:2px solid var(--brand-ring);background:var(--brand-bg);
+  font-size:.82rem;line-height:1.8;
+}
+.hres-big{font-size:1.5rem;font-weight:800;color:var(--brand-d);letter-spacing:-.02em;}
+.hres-row{display:flex;align-items:baseline;gap:8px;margin:2px 0;}
+.hres-label{color:var(--ink3);font-size:.72rem;font-weight:600;min-width:160px;}
+
 /* ── PRINT ── */
 @media print{
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
@@ -439,6 +484,11 @@ header{
         </div>
         <div class="cb">
           <div class="btabs no-print" id="branchTabs"></div>
+          <div id="hearingBtn" class="no-print" style="display:none;margin-bottom:10px">
+            <button class="btn btn-o" style="width:100%;justify-content:center;gap:8px" onclick="openHearing()">
+              🦻 İşitme Hesap Aracı (Tablo 1 &amp; 2)
+            </button>
+          </div>
           <div class="swrap no-print">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6.5" cy="6.5" r="4"/><path d="M11 11l2.5 2.5" stroke-linecap="round"/></svg>
             <input type="text" id="search" placeholder="Tanı veya engel adı ara…  (Ctrl+K)" oninput="onSearch(this)"/>
@@ -507,6 +557,48 @@ header{
     </div>
   </div>
 </div>
+
+<!-- ═══ İŞİTME HESAP ARACI MODALİ ═══ -->
+<div id="hearingModal" class="hmodal-overlay" style="display:none" onclick="if(event.target===this)closeHearing()">
+  <div class="hmodal">
+    <div class="hmodal-head">
+      <span>🦻 İşitme Hesap Aracı — Tablo 1 &amp; 2 (ANSI 1969)</span>
+      <button onclick="closeHearing()" class="hmodal-close">×</button>
+    </div>
+    <div class="hmodal-body">
+      <p class="hmodal-note">Her kulak için 500, 1000, 2000, 4000 Hz eşiklerini dB olarak girin. Değerler 0–100 dB aralığında; 100 dB üzeri 100 olarak alınır.</p>
+      <div class="hearing-grid">
+        <div class="hearing-ear">
+          <div class="hearing-ear-label" style="color:#1d4ed8">SOL KULAK</div>
+          <div class="hearing-freqs">
+            <div class="hfq"><label>500 Hz</label><input type="number" id="hL500" min="0" max="100" placeholder="0"/><span>dB</span></div>
+            <div class="hfq"><label>1000 Hz</label><input type="number" id="hL1000" min="0" max="100" placeholder="0"/><span>dB</span></div>
+            <div class="hfq"><label>2000 Hz</label><input type="number" id="hL2000" min="0" max="100" placeholder="0"/><span>dB</span></div>
+            <div class="hfq"><label>4000 Hz</label><input type="number" id="hL4000" min="0" max="100" placeholder="0"/><span>dB</span></div>
+          </div>
+          <div class="hsum" id="hLsum">Toplam: —</div>
+        </div>
+        <div class="hearing-ear">
+          <div class="hearing-ear-label" style="color:#9d174d">SAĞ KULAK</div>
+          <div class="hearing-freqs">
+            <div class="hfq"><label>500 Hz</label><input type="number" id="hR500" min="0" max="100" placeholder="0"/><span>dB</span></div>
+            <div class="hfq"><label>1000 Hz</label><input type="number" id="hR1000" min="0" max="100" placeholder="0"/><span>dB</span></div>
+            <div class="hfq"><label>2000 Hz</label><input type="number" id="hR2000" min="0" max="100" placeholder="0"/><span>dB</span></div>
+            <div class="hfq"><label>4000 Hz</label><input type="number" id="hR4000" min="0" max="100" placeholder="0"/><span>dB</span></div>
+          </div>
+          <div class="hsum" id="hRsum">Toplam: —</div>
+        </div>
+      </div>
+      <div id="hearingResult" class="hearing-result" style="display:none"></div>
+    </div>
+    <div class="hmodal-foot">
+      <button class="btn btn-p" onclick="calcHearing()">Hesapla</button>
+      <button class="btn btn-o" id="hAddBtn" style="display:none" onclick="addHearingResult()">Seçilenlere Ekle</button>
+      <button class="btn" style="background:var(--bg);color:var(--ink3);border:1.5px solid var(--card-border)" onclick="closeHearing()">Kapat</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════
 // DÖNÜŞÜM ZİNCİRLERİ
@@ -1746,6 +1838,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderList();
   renderSelPanel();
   recalc();
+  const hBtn = document.getElementById('hearingBtn');
+  if (hBtn) hBtn.style.display = curBranch === 'ent' ? 'block' : 'none';
 
   // Hasta alanlarında değişiklik → kaydet
   ['pName','pTC','pDOB','pGender','pInst','pDate','pDoc','pSpec'].forEach(id => {
@@ -1793,6 +1887,14 @@ function renderBranchTabs() {
 function switchBranch(id){
   curBranch=id;
   document.getElementById('search').value='';
+  const cl = document.getElementById('sclear');
+  if (cl) cl.style.display = 'none';
+  const abRow = document.getElementById('allBranchRow');
+  if (abRow) abRow.style.display = 'none';
+  const cb = document.getElementById('allBranch');
+  if (cb) cb.checked = false;
+  const hBtn = document.getElementById('hearingBtn');
+  if (hBtn) hBtn.style.display = id === 'ent' ? 'block' : 'none';
   renderBranchTabs();
   renderList();
 }
@@ -2233,6 +2335,150 @@ function showToast(msg, type='info', duration=2800){
   t.innerHTML=`<span>${icons[type]||icons.info}</span><span>${msg}</span>`;
   document.body.appendChild(t);
   setTimeout(()=>{t.style.animation='slideUp .25s reverse';setTimeout(()=>t.remove(),240);}, duration);
+}
+
+// ═══════════════════════════════════════════════════
+// İŞİTME HESAP ARACI
+// ═══════════════════════════════════════════════════
+// ANSI 1969 binaural formula:
+//   monaural%(X) = max(0, X - 100) * 0.378   (X = 4-frequency threshold sum, capped at 100)
+//   binaural%    = (5 * M_better + M_worse) / 6
+// Then Table 2 maps binaural% → disability rate%
+
+const HTABLE2 = [
+  [0,    1.7,  0],
+  [1.8,  4.2,  2],
+  [4.3,  7.4,  4],
+  [7.5,  9.9,  6],
+  [10.0, 13.1, 8],
+  [13.2, 15.9, 10],
+  [16.0, 18.8, 12],
+  [18.9, 21.4, 14],
+  [21.5, 24.5, 16],
+  [24.6, 27.1, 18],
+  [27.2, 30.0, 20],
+  [30.1, 32.8, 22],
+  [32.9, 35.9, 24],
+  [36.0, 38.5, 26],
+  [38.6, 41.7, 30],
+  [41.8, 44.2, 31],
+  [44.3, 47.4, 32],
+  [47.5, 49.9, 33],
+  [50.0, 53.1, 34],
+  [54.2, 55.7, 35],
+  [55.8, 58.8, 36],
+  [58.9, 61.4, 37],
+  [61.5, 64.5, 38],
+  [64.6, 67.1, 39],
+  [67.2, 70.0, 40],
+  [70.1, 72.8, 41],
+  [72.9, 75.9, 42],
+  [76.0, 78.5, 43],
+  [78.6, 81.7, 44],
+  [81.8, 84.2, 45],
+  [84.3, 87.4, 46],
+  [87.5, 89.9, 47],
+  [90.0, 93.1, 48],
+  [93.2, 95.7, 49],
+  [95.8, 98.8, 50],
+  [98.9, 100.0,52],
+];
+
+function hThreshSum(ids) {
+  return ids.reduce((acc, id) => {
+    const v = parseFloat(document.getElementById(id)?.value || 0);
+    return acc + Math.min(100, Math.max(0, isNaN(v) ? 0 : v));
+  }, 0);
+}
+
+function hMonaural(sum) {
+  return Math.min(100, Math.max(0, (sum - 100) * 0.378));
+}
+
+function hBinaural(m1, m2) {
+  const better = Math.min(m1, m2);
+  const worse  = Math.max(m1, m2);
+  return (5 * better + worse) / 6;
+}
+
+function hDisabilityRate(binaural) {
+  for (const [lo, hi, rate] of HTABLE2) {
+    if (binaural >= lo && binaural <= hi) return rate;
+  }
+  return binaural > 100 ? 52 : 0;
+}
+
+let _hResult = null;
+
+function calcHearing() {
+  const sumL = hThreshSum(['hL500','hL1000','hL2000','hL4000']);
+  const sumR = hThreshSum(['hR500','hR1000','hR2000','hR4000']);
+  document.getElementById('hLsum').textContent = `Toplam: ${sumL} dB`;
+  document.getElementById('hRsum').textContent = `Toplam: ${sumR} dB`;
+
+  const mL = hMonaural(sumL);
+  const mR = hMonaural(sumR);
+  const bin = hBinaural(mL, mR);
+  const rate = hDisabilityRate(bin);
+
+  const betterEar = mL <= mR ? 'Sol' : 'Sağ';
+  const worseEar  = mL <= mR ? 'Sağ' : 'Sol';
+
+  _hResult = { sumL, sumR, mL, mR, bin, rate };
+
+  const el = document.getElementById('hearingResult');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="hres-row"><span class="hres-label">Sol kulak monoaural %</span><span>${mL.toFixed(1)}%</span></div>
+    <div class="hres-row"><span class="hres-label">Sağ kulak monoaural %</span><span>${mR.toFixed(1)}%</span></div>
+    <div class="hres-row"><span class="hres-label">İyi duyan kulak</span><span>${betterEar}</span></div>
+    <div class="hres-row" style="margin-top:8px;border-top:1px solid var(--brand-ring);padding-top:8px">
+      <span class="hres-label">Binaural işitme kaybı</span>
+      <span class="hres-big">${bin.toFixed(1)}%</span>
+    </div>
+    <div class="hres-row" style="margin-top:4px">
+      <span class="hres-label">Tablo 2 → Özür Oranı</span>
+      <span class="hres-big" style="color:${rate>=40?'#9f1239':rate>=20?'#c2410c':'#166534'}">%${rate}</span>
+    </div>
+    <div style="font-size:.7rem;color:var(--ink4);margin-top:8px">
+      Formül: Binaural = (5 × iyi kulak + kötü kulak) / 6 — ANSI 1969
+    </div>`;
+
+  document.getElementById('hAddBtn').style.display = rate > 0 ? 'inline-flex' : 'none';
+}
+
+function addHearingResult() {
+  if (!_hResult) return;
+  const id = 'hearing_calc_' + Date.now();
+  const { bin, rate, sumL, sumR } = _hResult;
+  const ENT_LABEL = BRANCHES.find(b=>b.id==='ent')?.label || 'KBB';
+  sel[id] = {
+    name: `İşitme kaybı (Tablo 1&2) — binaural %${bin.toFixed(1)} → özür %${rate}`,
+    sub: `Sol: ${sumL} dB · Sağ: ${sumR} dB · ANSI 1969`,
+    branch: ENT_LABEL,
+    rt: 'whole',
+    rp: rate,
+  };
+  renderSelPanel(); recalc(); saveSession();
+  closeHearing();
+  showToast(`İşitme kaybı %${rate} olarak eklendi.`, 'success');
+}
+
+function openHearing() {
+  _hResult = null;
+  document.getElementById('hearingResult').style.display = 'none';
+  document.getElementById('hAddBtn').style.display = 'none';
+  ['hL500','hL1000','hL2000','hL4000','hR500','hR1000','hR2000','hR4000'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('hLsum').textContent = 'Toplam: —';
+  document.getElementById('hRsum').textContent = 'Toplam: —';
+  document.getElementById('hearingModal').style.display = 'flex';
+}
+
+function closeHearing() {
+  document.getElementById('hearingModal').style.display = 'none';
 }
 </script>
 </body>
