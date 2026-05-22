@@ -261,6 +261,23 @@ header{
 .btn-o{background:#fff;color:var(--brand);border:1.5px solid var(--brand-ring);}
 .btn-o:hover{background:var(--brand-bg);}
 
+/* ── ALL-BRANCH SEARCH ── */
+.allbranch-row{
+  display:flex;align-items:center;gap:6px;
+  font-size:.73rem;color:var(--brand);font-weight:600;cursor:pointer;
+  padding:4px 2px 8px;user-select:none;
+}
+.allbranch-row input{accent-color:var(--brand);cursor:pointer;width:13px;height:13px;}
+.allbranch-row:hover{color:var(--brand-d);}
+
+/* ── BRANCH GROUP HEADER (cross-branch search results) ── */
+.bgroup{
+  font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;
+  padding:10px 6px 4px;color:#fff;border-radius:5px 5px 0 0;
+  margin-top:10px;margin-bottom:2px;
+}
+.bgroup:first-child{margin-top:0;}
+
 /* ── WARNING BOX ── */
 .warn-box{
   background:#fff7ed;border:1.5px solid #fed7aa;border-radius:var(--radius-sm);
@@ -384,7 +401,12 @@ header{
     <div class="cb">
       <div class="pgrid">
         <div class="fg"><label>Ad Soyad</label><input id="pName" type="text" placeholder="Hasta adı soyadı"/></div>
-        <div class="fg"><label>T.C. Kimlik No</label><input id="pTC" type="text" maxlength="11" placeholder="___________"/></div>
+        <div class="fg"><label>T.C. Kimlik No</label>
+          <div style="position:relative">
+            <input id="pTC" type="text" maxlength="11" placeholder="___________" oninput="validateTC(this)" style="padding-right:28px"/>
+            <span id="pTCval" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:.85rem;display:none"></span>
+          </div>
+        </div>
         <div class="fg"><label>Doğum Tarihi</label><input id="pDOB" type="date" oninput="calcAge()"/><span id="pAge" style="font-size:.7rem;color:var(--ink3);margin-top:3px;display:none"></span></div>
         <div class="fg"><label>Cinsiyet</label><select id="pGender"><option value="">Seçiniz</option><option>Erkek</option><option>Kadın</option></select></div>
         <div class="fg"><label>Kurum / Hastane</label><input id="pInst" type="text" placeholder="Hastane adı"/></div>
@@ -411,6 +433,10 @@ header{
             <input type="text" id="search" placeholder="Tanı veya engel adı ara…  (Ctrl+K)" oninput="onSearch(this)"/>
             <button class="sclear" id="sclear" onclick="clearSearch()" title="Temizle">×</button>
           </div>
+          <label class="allbranch-row no-print" id="allBranchRow" style="display:none">
+            <input type="checkbox" id="allBranch" onchange="renderList()"/>
+            <span>Tüm branşlarda ara</span>
+          </label>
           <div class="dlist no-print" id="dlist"></div>
         </div>
       </div>
@@ -1765,7 +1791,14 @@ function switchBranch(id){
 // ═══════════════════════════════════════════════════
 function onSearch(input) {
   const cl = document.getElementById('sclear');
-  if (cl) cl.style.display = input.value ? 'block' : 'none';
+  const abRow = document.getElementById('allBranchRow');
+  const hasQ = !!input.value;
+  if (cl) cl.style.display = hasQ ? 'block' : 'none';
+  if (abRow) abRow.style.display = hasQ ? 'flex' : 'none';
+  if (!hasQ) {
+    const cb = document.getElementById('allBranch');
+    if (cb) cb.checked = false;
+  }
   renderList();
 }
 function clearSearch() {
@@ -1773,6 +1806,10 @@ function clearSearch() {
   inp.value = '';
   const cl = document.getElementById('sclear');
   if (cl) cl.style.display = 'none';
+  const abRow = document.getElementById('allBranchRow');
+  if (abRow) abRow.style.display = 'none';
+  const cb = document.getElementById('allBranch');
+  if (cb) cb.checked = false;
   inp.focus();
   renderList();
 }
@@ -1784,64 +1821,84 @@ function highlight(text, q) {
   return text.slice(0,idx) + `<mark style="background:#fef08a;border-radius:2px;padding:0 1px">${text.slice(idx,idx+q.length)}</mark>` + text.slice(idx+q.length);
 }
 
+function buildItemHtml(it, q, branchId) {
+  const chain = RC[it.rt]||RC.whole;
+  const nameHl = highlight(it.name, q);
+  let html = '';
+  if(isBilat(it.rt)){
+    const selL=!!sel[it.id+'_L'], selR=!!sel[it.id+'_R'];
+    const anySel=selL||selR;
+    const rpShow=selL?sel[it.id+'_L'].rp:(selR?sel[it.id+'_R'].rp:it.rp);
+    html+=`
+      <div class="ditem ${anySel?'sel':''}" id="row_${it.id}">
+        <div class="dname">
+          <span class="dname-title">${nameHl}</span>
+          ${it.sub?`<span class="dsub">${it.sub}</span>`:''}
+        </div>
+        <span class="rbadge">${chain.title}</span>
+        <span class="pctl" onclick="event.stopPropagation()" style="gap:3px;flex-direction:column;align-items:flex-end">
+          <div style="display:flex;gap:3px">
+            <button class="sidebtn ${selL?'active':''}" onclick="toggleItemSide('${it.id}','L','${branchId||curBranch}')">Sol</button>
+            <button class="sidebtn ${selR?'active':''}" onclick="toggleItemSide('${it.id}','R','${branchId||curBranch}')">Sağ</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:3px">
+            <input type="number" min="0" max="100" value="${rpShow}" id="pct_${it.id}"
+              ${anySel?'':'disabled'}
+              onchange="updateBilatRp('${it.id}',this.value)"/>
+            <span class="psign">%</span>
+          </div>
+        </span>
+      </div>`;
+  } else {
+    const isSel=!!sel[it.id];
+    const rp=isSel?sel[it.id].rp:it.rp;
+    html+=`
+      <div class="ditem ${isSel?'sel':''}" id="row_${it.id}" onclick="toggleItemWithBranch('${it.id}','${branchId||curBranch}')">
+        <input type="checkbox" ${isSel?'checked':''} onclick="event.stopPropagation();toggleItemWithBranch('${it.id}','${branchId||curBranch}')"/>
+        <div class="dname">
+          <span class="dname-title">${nameHl}</span>
+          ${it.sub?`<span class="dsub">${it.sub}</span>`:''}
+        </div>
+        <span class="rbadge">${chain.title}</span>
+        <span class="pctl" onclick="event.stopPropagation()">
+          <input type="number" min="0" max="100" value="${rp}" id="pct_${it.id}"
+            ${isSel?'':'disabled'}
+            onchange="updateRp('${it.id}',this.value)"/>
+          <span class="psign">%</span>
+        </span>
+      </div>`;
+  }
+  return html;
+}
+
 function renderList() {
   const q = document.getElementById('search').value.toLowerCase().trim();
-  const cats = DATA[curBranch] || [];
+  const allMode = q && document.getElementById('allBranch')?.checked;
+  const searchBranches = allMode ? Object.keys(DATA) : [curBranch];
   let html = '';
   let any = false;
-  for (const cat of cats) {
-    const items = q ? cat.items.filter(i => i.name.toLowerCase().includes(q) || (i.sub||'').toLowerCase().includes(q)) : cat.items;
-    if (!items.length) continue;
-    any = true;
-    const isROM = cat.cat.includes('ROM') || cat.cat.includes('Tablo 1.4') || cat.cat.includes('Tablo 1.5') || cat.cat.includes('Tablo 1.6');
-    const isGait = cat.cat.includes('Yürüyüş Bozukluğu');
-    html += `<div class="cath">${cat.cat}<span class="cath-count">${items.length}</span>${isROM?'<span class="cath-romtag">ARİTMETİK TOPLAM</span>':''}${isGait?'<span class="cath-romtag" style="color:#9a3412;background:#fff7ed;border-color:#fed7aa">TEK BAŞINA</span>':''}</div>`;
-    for (const it of items) {
-      const chain = RC[it.rt]||RC.whole;
-      const nameHl = highlight(it.name, q);
-      if(isBilat(it.rt)){
-        const selL=!!sel[it.id+'_L'], selR=!!sel[it.id+'_R'];
-        const anySel=selL||selR;
-        const rpShow=selL?sel[it.id+'_L'].rp:(selR?sel[it.id+'_R'].rp:it.rp);
-        html+=`
-          <div class="ditem ${anySel?'sel':''}" id="row_${it.id}">
-            <div class="dname">
-              <span class="dname-title">${nameHl}</span>
-              ${it.sub?`<span class="dsub">${it.sub}</span>`:''}
-            </div>
-            <span class="rbadge">${chain.title}</span>
-            <span class="pctl" onclick="event.stopPropagation()" style="gap:3px;flex-direction:column;align-items:flex-end">
-              <div style="display:flex;gap:3px">
-                <button class="sidebtn ${selL?'active':''}" onclick="toggleItemSide('${it.id}','L')">Sol</button>
-                <button class="sidebtn ${selR?'active':''}" onclick="toggleItemSide('${it.id}','R')">Sağ</button>
-              </div>
-              <div style="display:flex;align-items:center;gap:3px">
-                <input type="number" min="0" max="100" value="${rpShow}" id="pct_${it.id}"
-                  ${anySel?'':'disabled'}
-                  onchange="updateBilatRp('${it.id}',this.value)"/>
-                <span class="psign">%</span>
-              </div>
-            </span>
-          </div>`;
-      } else {
-        const isSel=!!sel[it.id];
-        const rp=isSel?sel[it.id].rp:it.rp;
-        html+=`
-          <div class="ditem ${isSel?'sel':''}" id="row_${it.id}" onclick="toggleItem('${it.id}')">
-            <input type="checkbox" ${isSel?'checked':''} onclick="event.stopPropagation();toggleItem('${it.id}')"/>
-            <div class="dname">
-              <span class="dname-title">${nameHl}</span>
-              ${it.sub?`<span class="dsub">${it.sub}</span>`:''}
-            </div>
-            <span class="rbadge">${chain.title}</span>
-            <span class="pctl" onclick="event.stopPropagation()">
-              <input type="number" min="0" max="100" value="${rp}" id="pct_${it.id}"
-                ${isSel?'':'disabled'}
-                onchange="updateRp('${it.id}',this.value)"/>
-              <span class="psign">%</span>
-            </span>
-          </div>`;
+
+  for (const branchId of searchBranches) {
+    const cats = DATA[branchId] || [];
+    let branchHtml = '';
+    let branchAny = false;
+    for (const cat of cats) {
+      const items = q ? cat.items.filter(i => i.name.toLowerCase().includes(q) || (i.sub||'').toLowerCase().includes(q)) : cat.items;
+      if (!items.length) continue;
+      branchAny = true;
+      any = true;
+      const isROM = cat.cat.includes('ROM') || cat.cat.includes('Tablo 1.4') || cat.cat.includes('Tablo 1.5') || cat.cat.includes('Tablo 1.6');
+      const isGait = cat.cat.includes('Yürüyüş Bozukluğu');
+      branchHtml += `<div class="cath">${cat.cat}<span class="cath-count">${items.length}</span>${isROM?'<span class="cath-romtag">ARİTMETİK TOPLAM</span>':''}${isGait?'<span class="cath-romtag" style="color:#9a3412;background:#fff7ed;border-color:#fed7aa">TEK BAŞINA</span>':''}</div>`;
+      for (const it of items) {
+        branchHtml += buildItemHtml(it, q, branchId);
       }
+    }
+    if (branchAny && allMode) {
+      const b = BRANCHES.find(b=>b.id===branchId);
+      html += `<div class="bgroup" style="background:${b?.color||'#64748b'}">${b?.label||branchId}</div>${branchHtml}`;
+    } else {
+      html += branchHtml;
     }
   }
   if (!any) html = `<div class="nores">🔍 "<strong>${q}</strong>" için sonuç bulunamadı.</div>`;
@@ -1851,6 +1908,13 @@ function renderList() {
 // ═══════════════════════════════════════════════════
 // TOGGLE / UPDATE
 // ═══════════════════════════════════════════════════
+function toggleItemWithBranch(id, branchId) {
+  const savedBranch = curBranch;
+  curBranch = branchId || curBranch;
+  toggleItem(id);
+  curBranch = savedBranch;
+}
+
 function toggleItem(id) {
   const item = findItem(id);
   if (!item) return;
@@ -1867,16 +1931,17 @@ function toggleItem(id) {
   renderList(); renderSelPanel(); recalc(); saveSession();
 }
 
-function toggleItemSide(baseId, side) {
+function toggleItemSide(baseId, side, branchId) {
   const cid = baseId+'_'+side;
   const item = findItem(baseId);
   if (!item) return;
+  const bLabel = BRANCHES.find(b=>b.id===(branchId||curBranch))?.label||'';
   if (sel[cid]) { delete sel[cid]; }
   else {
     sel[cid] = {
       name: item.name,
       sub: item.sub||'',
-      branch: BRANCHES.find(b=>b.id===curBranch)?.label||'',
+      branch: bLabel,
       rt: item.rt,
       rp: item.rp,
       side: side,
@@ -2056,6 +2121,24 @@ function copyResult() {
     .catch(()=>showToast('Kopyalama başarısız.','error'));
 }
 
+function validateTC(input) {
+  const v = input.value.trim();
+  const el = document.getElementById('pTCval');
+  if (!v) { el.style.display='none'; return; }
+  if (v.length !== 11 || !/^\d{11}$/.test(v) || v[0]==='0') { el.textContent='✗'; el.style.color='#dc2626'; el.style.display='block'; return; }
+  const d = v.split('').map(Number);
+  const s1 = (d[0]+d[2]+d[4]+d[6]+d[8])*7 - (d[1]+d[3]+d[5]+d[7]);
+  const c10 = ((s1%10)+10)%10;
+  const s2 = d[0]+d[1]+d[2]+d[3]+d[4]+d[5]+d[6]+d[7]+d[8]+d[9];
+  if (c10 === d[9] && s2%10 === d[10]) {
+    el.textContent='✓'; el.style.color='#16a34a'; el.style.display='block';
+  } else {
+    el.textContent='✗'; el.style.color='#dc2626'; el.style.display='block';
+  }
+}
+
+let undoStack = null;
+
 function calcAge() {
   const dob = document.getElementById('pDOB').value;
   const el = document.getElementById('pAge');
@@ -2104,21 +2187,35 @@ function updateWarnings() {
 
 function clearAll(){
   if(!Object.keys(sel).length) return;
+  undoStack = JSON.parse(JSON.stringify(sel));
   sel={};
   renderList();
   renderSelPanel();
   recalc();
   saveSession();
-  showToast('Tüm seçimler temizlendi.','success');
+  showToast('Temizlendi. <button onclick="undoClear()" style="margin-left:8px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.75rem;font-weight:600">Geri Al</button>', 'info', 6000);
 }
 
-function showToast(msg, type='info'){
+function undoClear(){
+  if(!undoStack) return;
+  sel = undoStack;
+  undoStack = null;
+  renderList();
+  renderSelPanel();
+  recalc();
+  saveSession();
+  // remove lingering toasts
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  showToast('Seçimler geri yüklendi.','success');
+}
+
+function showToast(msg, type='info', duration=2800){
   const icons = {info:'ℹ️', success:'✅', error:'❌'};
   const t=document.createElement('div');
   t.className='toast';
   t.innerHTML=`<span>${icons[type]||icons.info}</span><span>${msg}</span>`;
   document.body.appendChild(t);
-  setTimeout(()=>{t.style.animation='slideUp .25s reverse';setTimeout(()=>t.remove(),240);},2600);
+  setTimeout(()=>{t.style.animation='slideUp .25s reverse';setTimeout(()=>t.remove(),240);}, duration);
 }
 </script>
 </body>
