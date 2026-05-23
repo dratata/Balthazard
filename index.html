@@ -333,23 +333,93 @@ header{
   font-size:.8rem;font-weight:600;box-shadow:var(--shadow-lg);
   z-index:1000;animation:slideUp .28s cubic-bezier(.4,0,.2,1);
   display:flex;align-items:center;gap:8px;
+  max-width:calc(100vw - 32px);
+}
+@media(max-width:640px){
+  .toast{bottom:76px;right:12px;left:12px;font-size:.78rem;}
 }
 @keyframes slideUp{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
 .nores{text-align:center;color:var(--ink4);font-size:.82rem;padding:24px;line-height:1.8;}
 
+/* ── MOBİL ALT SONUÇ ÇUBUĞU ── */
+.mob-result-bar{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:linear-gradient(135deg,var(--brand-d) 0%,var(--brand) 60%,#2563eb 100%);
+  color:#fff;padding:10px 16px;
+  box-shadow:0 -3px 16px rgba(30,64,175,.35);
+  align-items:center;gap:10px;
+  border-top:1.5px solid rgba(255,255,255,.15);
+}
+.mob-result-bar .mob-pct{font-size:1.5rem;font-weight:800;line-height:1;letter-spacing:-.03em;flex-shrink:0;}
+.mob-result-bar .mob-label{font-size:.7rem;opacity:.8;flex:1;min-width:0;}
+.mob-result-bar .mob-label strong{display:block;font-size:.78rem;opacity:1;}
+.mob-result-bar .mob-btn{
+  background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);
+  color:#fff;border-radius:8px;padding:6px 14px;font-size:.73rem;font-weight:700;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+}
+.mob-result-bar .mob-btn:active{background:rgba(255,255,255,.35);}
+
+/* ── MOBİL PANEL SEKMELERİ ── */
+.mob-tabs{
+  display:none;
+  position:sticky;top:64px;z-index:100;
+  background:var(--card);border-bottom:2px solid var(--card-border);
+  padding:0;
+}
+.mob-tabs-inner{display:flex;}
+.mob-tab-btn{
+  flex:1;padding:11px 8px;font-size:.8rem;font-weight:600;text-align:center;
+  border:none;background:none;cursor:pointer;color:var(--ink3);
+  border-bottom:2.5px solid transparent;margin-bottom:-2px;
+  transition:color .15s,border-color .15s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.mob-tab-btn.active{color:var(--brand);border-bottom-color:var(--brand);}
+.mob-tab-btn .mob-badge{
+  background:var(--brand);color:#fff;border-radius:10px;
+  padding:0 7px;font-size:.65rem;font-weight:700;
+}
+
 /* ── RESPONSIVE ── */
 @media(max-width:640px){
-  header{padding:0 14px;}
-  .htitles h1{font-size:.9rem;}
+  header{padding:0 14px;height:56px;}
+  .mob-tabs{top:56px;}
+  .hlogo{width:32px;height:32px;}
+  .htitles h1{font-size:.88rem;}
   .htitles p{display:none;}
   .hbadge{display:none;}
-  .wrap{padding:12px 10px 60px;}
-  .cb{padding:12px 14px;}
-  .pgrid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;}
-  .dlist{max-height:340px;}
+  .wrap{padding:10px 10px 90px;}
+  .cb{padding:12px 12px;}
+  .pgrid{grid-template-columns:1fr 1fr;gap:8px;}
+  .dlist{max-height:calc(100svh - 280px);min-height:200px;}
   .rpct{font-size:2.6rem;}
-  .brow{gap:6px;}
-  .btn{padding:8px 12px;font-size:.76rem;}
+  .brow{gap:6px;flex-wrap:wrap;}
+  .btn{padding:9px 14px;font-size:.78rem;}
+  .ditem{min-height:48px;padding:10px 10px;}
+  .dname-title{font-size:.84rem;}
+  .dsub{font-size:.7rem;}
+  .btab{padding:7px 13px;font-size:.74rem;}
+  .fg input,.fg select{padding:9px 10px;font-size:.86rem;}
+
+  /* Seçili panel mobile compact */
+  .sitem-top{padding:10px 12px;}
+  .sname{font-size:.84rem;}
+  .chain{padding:6px 12px 8px;}
+
+  /* Panel sekmeleri göster */
+  .mob-tabs{display:block;}
+
+  /* Panel geçişi */
+  .mob-panel{display:none !important;}
+  .mob-panel.mob-active{display:block !important;}
+}
+
+@media(max-width:400px){
+  .pgrid{grid-template-columns:1fr;}
+  .btab{padding:6px 10px;font-size:.7rem;}
+  .mob-result-bar .mob-pct{font-size:1.3rem;}
 }
 
 /* ── HEARING MODAL ── */
@@ -486,9 +556,21 @@ header{
     </div>
   </div>
 
+  <!-- MOBİL PANEL SEKMELERİ -->
+  <div class="mob-tabs no-print">
+    <div class="mob-tabs-inner">
+      <button class="mob-tab-btn active" id="mobTabSec" onclick="mobSwitch('sec')">
+        🏥 Engel Seç
+      </button>
+      <button class="mob-tab-btn" id="mobTabSon" onclick="mobSwitch('son')">
+        📋 Seçili &amp; Sonuç <span class="mob-badge" id="mobBadge" style="display:none">0</span>
+      </button>
+    </div>
+  </div>
+
   <div class="grid">
     <!-- SOL: Branş + Liste -->
-    <div>
+    <div class="mob-panel mob-active" id="mobPanelSec">
       <div class="card">
         <div class="ch">
           <span class="ico ico-blue">🏥</span>
@@ -517,7 +599,7 @@ header{
     </div>
 
     <!-- SAĞ: Seçili + Sonuç -->
-    <div>
+    <div class="mob-panel" id="mobPanelSon">
       <div class="card">
         <div class="ch">
           <span class="ico ico-green">✔</span>
@@ -569,6 +651,16 @@ header{
       </div>
     </div>
   </div>
+</div>
+
+<!-- ═══ MOBİL ALT SONUÇ ÇUBUĞU ═══ -->
+<div class="mob-result-bar no-print" id="mobResultBar" style="display:none">
+  <div class="mob-pct" id="mobPct">%0</div>
+  <div class="mob-label">
+    <strong id="mobClsLabel">Engel oranı</strong>
+    Balthazard birleşik
+  </div>
+  <button class="mob-btn" onclick="mobSwitch('son')">Detay →</button>
 </div>
 
 <!-- ═══ İŞİTME HESAP ARACI MODALİ ═══ -->
@@ -3376,6 +3468,7 @@ function recalc() {
 
   updateWarnings();
   renderBranchTabs();
+  updateMobBar();
   if (!items.length) {
     sc.style.display='none';
     rb.className='rbox empty';
@@ -3712,6 +3805,75 @@ function openHearing() {
 function closeHearing() {
   document.getElementById('hearingModal').style.display = 'none';
 }
+
+// ═══════════════════════════════════════════════════
+// MOBİL PANEL YÖNETİMİ
+// ═══════════════════════════════════════════════════
+let _mobActive = 'sec';
+
+function mobSwitch(panel) {
+  _mobActive = panel;
+  const isMob = window.innerWidth <= 640;
+  const panSec = document.getElementById('mobPanelSec');
+  const panSon = document.getElementById('mobPanelSon');
+  const tabSec = document.getElementById('mobTabSec');
+  const tabSon = document.getElementById('mobTabSon');
+  if (!panSec || !panSon) return;
+  if (isMob) {
+    if (panel === 'sec') {
+      panSec.classList.add('mob-active');
+      panSon.classList.remove('mob-active');
+      tabSec && tabSec.classList.add('active');
+      tabSon && tabSon.classList.remove('active');
+    } else {
+      panSon.classList.add('mob-active');
+      panSec.classList.remove('mob-active');
+      tabSon && tabSon.classList.add('active');
+      tabSec && tabSec.classList.remove('active');
+    }
+  } else {
+    // Desktop: both panels visible
+    panSec.classList.add('mob-active');
+    panSon.classList.add('mob-active');
+  }
+}
+
+function updateMobBar() {
+  const bar = document.getElementById('mobResultBar');
+  if (!bar) return;
+  const isMob = window.innerWidth <= 640;
+  const items = Object.entries(sel).map(([id,it])=>({wp:wpPct(it.rt,it.rp)}));
+  const cnt = items.length;
+  if (!isMob || cnt === 0) {
+    bar.style.display = 'none';
+    return;
+  }
+  let rem=1.0, cum=0.0;
+  items.forEach(it=>{ const p=it.wp/100; cum+=rem*p; rem*=(1-p); });
+  const final = Math.round(cum*100);
+  const cls = getClass(final);
+  bar.style.display = 'flex';
+  document.getElementById('mobPct').textContent = '%' + final;
+  document.getElementById('mobClsLabel').textContent = cls.label.split('(')[0].trim();
+  // Update badge
+  const badge = document.getElementById('mobBadge');
+  if (badge) { badge.textContent = cnt; badge.style.display = cnt ? '' : 'none'; }
+}
+
+window.addEventListener('resize', () => {
+  const isMob = window.innerWidth <= 640;
+  const panSec = document.getElementById('mobPanelSec');
+  const panSon = document.getElementById('mobPanelSon');
+  if (!isMob) {
+    panSec && panSec.classList.add('mob-active');
+    panSon && panSon.classList.add('mob-active');
+    const bar = document.getElementById('mobResultBar');
+    if (bar) bar.style.display = 'none';
+  } else {
+    mobSwitch(_mobActive);
+    updateMobBar();
+  }
+});
 </script>
 </body>
 </html>
