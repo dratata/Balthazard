@@ -287,8 +287,21 @@ header{
 .warn-box .wico{font-size:1rem;flex-shrink:0;margin-top:1px;}
 .warn-box strong{color:#7c2d12;}
 
-/* ── ROM SUM NOTE ── */
-/* ── CATEGORY SELECTED BADGE ── */
+/* ── CATEGORY JUMP BAR ── */
+.catjump-bar{
+  display:flex;flex-wrap:wrap;gap:4px;padding:8px 10px 6px;
+  background:var(--bg);border-bottom:1px solid var(--card-border);
+  position:sticky;top:0;z-index:10;
+}
+.catjump-btn{
+  font-size:.6rem;font-weight:600;padding:2px 7px;border-radius:20px;
+  background:var(--card);border:1px solid var(--card-border);color:var(--ink3);
+  cursor:pointer;white-space:nowrap;transition:background .15s,color .15s;
+}
+.catjump-btn:hover{background:var(--brand-bg);color:var(--brand-d);border-color:var(--brand-ring);}
+.catjump-btn.has-sel{background:#dcfce7;color:#15803d;border-color:#bbf7d0;}
+
+/* ── WARN-BOX ── */
 .cath-sel{
   margin-left:4px;font-size:.6rem;color:#16a34a;background:#dcfce7;
   border:1px solid #bbf7d0;border-radius:4px;padding:0 6px;font-weight:700;
@@ -734,13 +747,22 @@ msk:[
     {id:'m74',name:'Dirsek implant artroplastisi',              sub:'Tablo 2.8 – artroplasti sonrası sabit değer; ÜE %28 → TVE ~%16.8',            rt:'upper_ext', rp:28},
     {id:'m75',name:'Dirsek rezeksyon artroplastisi',            sub:'Tablo 2.8 – rezeksyon artroplasti; ÜE %35 → TVE ~%21.0',                      rt:'upper_ext', rp:35},
   ]},
-  {cat:'Ampütasyon – Üst Ekstremite',items:[
-    {id:'m80',name:'Omuz dezartikülasyonu',                     sub:'Tablo 2.1 – doğrudan TVE değeri; TVE = %60',                                   rt:'whole', rp:60},
-    {id:'m81',name:'Kol ampütasyonu – üst 1/3',                sub:'Tablo 2.1 – doğrudan TVE değeri; TVE = %56',                                   rt:'whole', rp:56},
-    {id:'m82',name:'Kol ampütasyonu – orta/alt 1/3',           sub:'Tablo 2.1 – doğrudan TVE değeri; TVE = %52',                                   rt:'whole', rp:52},
-    {id:'m83',name:'Dirsek dezartikülasyonu',                   sub:'Tablo 2.1 – doğrudan TVE değeri; TVE = %50',                                   rt:'whole', rp:50},
-    {id:'m84',name:'Önkol ampütasyonu – üst 1/3',              sub:'Tablo 2.1 – doğrudan TVE değeri; TVE = %46',                                   rt:'whole', rp:46},
-    {id:'m85',name:'Önkol ampütasyonu – alt 1/3',              sub:'Tablo 2.1 – doğrudan TVE değeri; TVE = %42',                                   rt:'whole', rp:42},
+  {cat:'Ampütasyon – Üst Ekstremite (Tablo 2.7)',items:[
+    {id:'m80x',name:'Skapulotorasik dezartikülasyon (forequarter)',sub:'Tablo 2.7: Omuz kuşağı dahil tüm ÜE kaybı. TVE = %70 doğrudan.',             rt:'whole', rp:70},
+    {id:'m80',name:'Omuz dezartikülasyonu / Kol (deltoid proks.)',sub:'Tablo 2.7: Glenohumeral dezartiküasyon veya deltoid insersiyosu proks. kol amputasyonu. ÜE %100 → TVE = %60.',rt:'whole', rp:60},
+    {id:'m81',name:'Kol ampütasyonu – deltoid ile bisipital insersiyo arası',sub:'Tablo 2.7: Humerus orta 1/3 amputasyonu. ÜE %95 → TVE = %57.',    rt:'whole', rp:57},
+    {id:'m82',name:'Önkol ampütasyonu – bisipital dist.–trans-MKF arası',sub:'Tablo 2.7: Radius/ulna düzeyinde tüm önkol/el kaybı. ÜE %94 → TVE = %56.',rt:'whole', rp:56},
+    {id:'m83',name:'El – tüm parmaklar MF eklemden (başparmak dahil)',sub:'Tablo 2.7: El bileği sağlam; tüm 5 parmak MF eklemden kesilmiş. El %100 → ÜE %90 → TVE = %54.',rt:'whole', rp:54},
+    {id:'m84',name:'El – başparmak hariç tüm parmaklar MF eklemden',sub:'Tablo 2.7: El bileği + başparmak sağlam; 4 parmak MF\'den. El %60 → ÜE %54 → TVE = %32.',rt:'whole', rp:32},
+    {id:'m84b',name:'Başparmak – KMK eklem (1. metakarpal 1/3 distal)', sub:'Tablo 2.7: Başparmak tüm kemik zinciri korunmamış; KMK düzeyi. ÜE %38 → TVE = %23.',rt:'whole', rp:23},
+    {id:'m84c',name:'Başparmak – MF eklem (tüm başparmak)',      sub:'Tablo 2.7: Başparmak MF eklemden kesilmiş; ÜE %36 → TVE = %22.',              rt:'whole', rp:22},
+    {id:'m84d',name:'Başparmak – İF eklem (distal falank)',       sub:'Tablo 2.7: Başparmak İF eklem düzeyi; ÜE %18 → TVE = %11.',                  rt:'whole', rp:11},
+    {id:'m85',name:'İşaret/orta parmak – MF eklem (tam kayıp)',  sub:'Tablo 2.7: İşaret veya orta parmak tam kaybı (MF). ÜE %18 → TVE = %11.',     rt:'whole', rp:11},
+    {id:'m85b',name:'İşaret/orta parmak – PİF eklem',            sub:'Tablo 2.7: PIF (proks. interfalangial) eklem kesilmiş; distal falank kaybı. ÜE %14 → TVE = %8.',rt:'whole', rp:8},
+    {id:'m85c',name:'İşaret/orta parmak – DİF eklem',            sub:'Tablo 2.7: DIF eklem kesilmiş; sadece tırnak ve uç falank. ÜE %8 → TVE = %5.',rt:'whole', rp:5},
+    {id:'m85d',name:'Yüzük/serçe parmak – MF eklem (tam kayıp)', sub:'Tablo 2.7: Yüzük veya küçük parmak MF\'den tam kayıp. ÜE %9 → TVE = %5.',   rt:'whole', rp:5},
+    {id:'m85e',name:'Yüzük/serçe parmak – PİF eklem',            sub:'Tablo 2.7: Yüzük/serçe PIF kesilmiş. ÜE %7 → TVE = %4.',                     rt:'whole', rp:4},
+    {id:'m85f',name:'Yüzük/serçe parmak – DİF eklem',            sub:'Tablo 2.7: Yüzük/serçe DIF kesilmiş. ÜE %5 → TVE = %3.',                     rt:'whole', rp:3},
   ]},
   {cat:'Ayak Büyük Parmağı',items:[
     {id:'m90',name:'Büyük parmak – tam kayıp (ampütasyon)',     sub:'Ampütasyon; Büyük P. %100 → Ayak %17 → AE %11.9 → TVE ~%5.95',               rt:'toe_great', rp:100},
@@ -803,7 +825,32 @@ msk:[
     {id:'m156',name:'Diz altı ampütasyon – orta/distal',       sub:'Tablo 3.30 – tibia orta/alt 1/3; TVE = %40 doğrudan',                         rt:'whole', rp:40},
     {id:'m157',name:'Ayak bileği dezartikülasyonu (Syme)',      sub:'Tablo 3.30 – Syme ampütasyonu; TVE = %38 doğrudan',                           rt:'whole', rp:38},
     {id:'m158',name:'Chopart / Orta ayak ampütasyonu',         sub:'Tablo 3.30 – midtarsal; TVE = %31 doğrudan',                                  rt:'whole', rp:31},
-    {id:'m159',name:'Transmetatarsal ampütasyon',               sub:'Tablo 3.30 – metatars proksimal; TVE = %25 doğrudan',                         rt:'whole', rp:25},
+    {id:'m159',name:'Transmetatarsal ampütasyon',               sub:'Tablo 3.30: Tüm metatarsal başlarından distal; yük transferi tamamen kaybolur. TVE = %25 doğrudan',rt:'whole', rp:25},
+    {id:'m159b',name:'1. metatarsal ampütasyon',               sub:'Tablo 3.30: 1. MTT kaybı; büyük parmak basıncı yok. Kişi %10 (AE %20; ayak %28).',rt:'whole',rp:10},
+    {id:'m159c',name:'MTF eklemden tüm parmaklar (5 parmak)', sub:'Tablo 3.30: Ayak bileği sağlam; 5 parmak MTF\'den. Kişi %11 (AE %22; ayak %31).',rt:'whole',rp:11},
+    {id:'m159d',name:'MTF eklemden büyük parmak',              sub:'Tablo 3.30: Sadece büyük parmak MTF\'den. Kişi %6 (AE %12; ayak %17).',         rt:'whole',rp:6},
+    {id:'m159e',name:'İF eklemden büyük parmak (distal falanks)',sub:'Tablo 3.30: Büyük parmak İF eklem; tırnak parmak kaybı. Kişi %3 (AE %5; ayak %7).',rt:'whole',rp:3},
+    {id:'m159f',name:'MTF eklemden küçük parmak (2-5)',        sub:'Tablo 3.30: Herhangi bir küçük parmak MTF\'den. Kişi %1 (AE %2; ayak %3). Her parmak için ayrı seçin.',rt:'whole',rp:1},
+  ]},
+  {cat:'Ayak Parmağı Ankilozu – Kombinasyonlar (Tablo 3.29)',items:[
+    {id:'mtp01',name:'Büyük parmak ankilozu – tam ekstansiyon (0°)',          sub:'Tablo 3.29: Büyük parmak MTF+IF tam eksT. ankilozu. Kişi %5 (AE %10; ayak %14).',rt:'whole',rp:5},
+    {id:'mtp02',name:'Büyük parmak ankilozu – fonksiyonel pozisyon',          sub:'Tablo 3.29: Büyük parmak fonksiyonel ankiloz (hafif fleksiyon). Kişi %5 (AE %9; ayak %13).',rt:'whole',rp:5},
+    {id:'mtp03',name:'Büyük parmak ankilozu – tam fleksiyon',                 sub:'Tablo 3.29: Büyük parmak tam fleksiyon ankilozu; pençe parmak. Kişi %7 (AE %13; ayak %18).',rt:'whole',rp:7},
+    {id:'mtp04',name:'Büyük parmak + 2. parmak ankilozu – fonksiyonel',       sub:'Tablo 3.29: Büyük + 2. parmak kombinasyonu fonksiyonel. Kişi %6 (AE %11; ayak %15).',rt:'whole',rp:6},
+    {id:'mtp05',name:'Büyük parmak + 2,3,4,5. parmak – fonksiyonel',         sub:'Tablo 3.29: Tüm parmaklar fonksiyonel ankiloz. Kişi %8 (AE %15; ayak %21).',rt:'whole',rp:8},
+    {id:'mtp06',name:'Büyük parmak + 2,3,4,5. parmak – kötü pozisyon',       sub:'Tablo 3.29: Tüm parmaklar tam fleksiyon ankilozu; pençe parmak. Kişi %11 (AE %21; ayak %30).',rt:'whole',rp:11},
+    {id:'mtp07',name:'2. parmak ankilozu – fonksiyonel',                      sub:'Tablo 3.29: Sadece 2. parmak fonksiyonel ankiloz. Kişi %1 (AE %1; ayak %2).',rt:'whole',rp:1},
+    {id:'mtp08',name:'2. ve 3. parmak ankilozu – fonksiyonel',                sub:'Tablo 3.29: 2+3. parmak kombinasyonu. Kişi %2 (AE %3; ayak %4).',rt:'whole',rp:2},
+    {id:'mtp09',name:'2,3,4. parmak ankilozu – fonksiyonel',                  sub:'Tablo 3.29: 2+3+4. parmak. Kişi %2 (AE %3; ayak %4).',rt:'whole',rp:2},
+    {id:'mtp10',name:'2,3,4,5. parmak ankilozu – fonksiyonel (büyük sağlam)',sub:'Tablo 3.29: Tüm küçük parmaklar; büyük parmak sağlam. Kişi %3 (AE %6; ayak %8).',rt:'whole',rp:3},
+    {id:'mtp11',name:'2,3,4,5. parmak ankilozu – kötü pozisyon (tam fleks)',sub:'Tablo 3.29: Tüm küçük parmaklar tam fleksiyon; pençe parmak deformitesi. Kişi %4 (AE %8; ayak %12).',rt:'whole',rp:4},
+  ]},
+  {cat:'Alt Ekst. – Periferik Vasküler Hastalık (Tablo 3.36)',items:[
+    {id:'mpv01',name:'Periferik vasküler hastalık – Sınıf 1',   sub:'Tablo 3.36 (MSK/AE): KBI >0.9; asemptomatik veya minimal semptom; tedaviye yanıt iyi. TVE = %5.',rt:'whole',rp:5},
+    {id:'mpv02',name:'Periferik vasküler hastalık – Sınıf 2',   sub:'Tablo 3.36: KBI 0.5–0.9; klaudikasyon >200m; trofik bozukluk yok. TVE = %25.',rt:'whole',rp:25},
+    {id:'mpv03',name:'Periferik vasküler hastalık – Sınıf 3',   sub:'Tablo 3.36: KBI ≤0.5; klaudikasyon <200m; tedaviden kısmi yarar. TVE = %50.',rt:'whole',rp:50},
+    {id:'mpv04',name:'Periferik vasküler hastalık – Sınıf 4',   sub:'Tablo 3.36: İstirahat ağrısı ve/veya trofik bozukluk (ülser); cerrahi yararlı olmayan. TVE = %75.',rt:'whole',rp:75},
+    {id:'mpv05',name:'Periferik vasküler hastalık – Sınıf 5',   sub:'Tablo 3.36: İlerlemiş iskemi; doku nekrozu; amputasyon gündemdeyken veya iyileşmeyen ülser. TVE = %90.',rt:'whole',rp:90},
   ]},
   {cat:'Omurga – Servikal (Yaralanma Modeli)',items:[
     {id:'m160',name:'Servikal Kat. I – klinik bulgu yok',      sub:'Nörolojik kayıp, yapısal bozukluk, kırık yok; TVE = %0',                       rt:'whole', rp:0},
@@ -2273,11 +2320,14 @@ function renderList() {
   const searchBranches = allMode ? Object.keys(DATA) : [curBranch];
   let html = '';
   let any = false;
+  // Category jump bar data for current branch (no-search, single branch)
+  let jumpCats = [];
 
   for (const branchId of searchBranches) {
     const cats = DATA[branchId] || [];
     let branchHtml = '';
     let branchAny = false;
+    let catIdx = 0;
     for (const cat of cats) {
       const items = q ? cat.items.filter(i => i.name.toLowerCase().includes(q) || (i.sub||'').toLowerCase().includes(q)) : cat.items;
       if (!items.length) continue;
@@ -2286,10 +2336,13 @@ function renderList() {
       const isROM = cat.cat.includes('ROM') || cat.cat.includes('Tablo 1.4') || cat.cat.includes('Tablo 1.5') || cat.cat.includes('Tablo 1.6');
       const isGait = cat.cat.includes('Yürüyüş Bozukluğu');
       const selInCat = cat.items.filter(i => sel[i.id] || sel[i.id+'_L'] || sel[i.id+'_R']).length;
-      branchHtml += `<div class="cath">${cat.cat}<span class="cath-count">${items.length}</span>${selInCat>0?`<span class="cath-sel">${selInCat} seçili</span>`:''}${isROM?'<span class="cath-romtag">ARİTMETİK TOPLAM</span>':''}${isGait?'<span class="cath-romtag" style="color:#9a3412;background:#fff7ed;border-color:#fed7aa">TEK BAŞINA</span>':''}</div>`;
+      const catAnchor = 'cat-anchor-' + branchId + '-' + catIdx;
+      if (!allMode) jumpCats.push({label: cat.cat, anchor: catAnchor, sel: selInCat});
+      branchHtml += `<div class="cath" id="${catAnchor}">${cat.cat}<span class="cath-count">${items.length}</span>${selInCat>0?`<span class="cath-sel">${selInCat} seçili</span>`:''}${isROM?'<span class="cath-romtag">ARİTMETİK TOPLAM</span>':''}${isGait?'<span class="cath-romtag" style="color:#9a3412;background:#fff7ed;border-color:#fed7aa">TEK BAŞINA</span>':''}</div>`;
       for (const it of items) {
         branchHtml += buildItemHtml(it, q, branchId);
       }
+      catIdx++;
     }
     if (branchAny && allMode) {
       const b = BRANCHES.find(b=>b.id===branchId);
@@ -2299,7 +2352,16 @@ function renderList() {
     }
   }
   if (!any) html = `<div class="nores">🔍 "<strong>${q}</strong>" için sonuç bulunamadı.</div>`;
-  document.getElementById('dlist').innerHTML = html;
+
+  // Prepend category jump bar when there are many categories and no search
+  let jumpBar = '';
+  if (!q && jumpCats.length >= 8) {
+    jumpBar = '<div class="catjump-bar no-print" id="catJumpBar">' +
+      jumpCats.map(c => `<button class="catjump-btn${c.sel?' has-sel':''}" onclick="jumpToCat('${c.anchor}')">${c.label.replace(/ –.*$/,'').replace(/\s*\(Tablo.*$/,'').substring(0,26)}</button>`).join('') +
+      '</div>';
+  }
+
+  document.getElementById('dlist').innerHTML = jumpBar + html;
 }
 
 // ═══════════════════════════════════════════════════
@@ -2590,6 +2652,16 @@ function clearAll(){
   recalc();
   saveSession();
   showToast('Temizlendi. <button onclick="undoClear()" style="margin-left:8px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.75rem;font-weight:600">Geri Al</button>', 'info', 6000);
+}
+
+function jumpToCat(anchorId) {
+  const el = document.getElementById(anchorId);
+  const dl = document.getElementById('dlist');
+  if (!el || !dl) return;
+  const bar = document.getElementById('catJumpBar');
+  const barH = bar ? bar.offsetHeight : 0;
+  // el.offsetTop is relative to dlist (its scroll container)
+  dl.scrollTop = el.offsetTop - barH - 4;
 }
 
 function undoClear(){
