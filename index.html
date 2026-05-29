@@ -3100,6 +3100,48 @@ hemato:[
 let curBranch = 'msk';
 let sel = {}; // { id: { name, branch, sub, rt, rp } }
 
+// ── UNDO / REDO ──
+let history = [];      // önceki sel anlık görüntüleri (geri al için)
+let future = [];       // geri alınan durumlar (yinele için)
+const HISTORY_MAX = 60;
+let _suspendHistory = false;
+
+function snapshot(){ return JSON.parse(JSON.stringify(sel)); }
+
+// Bir seçim değişikliğinden ÖNCE çağrılır: mevcut durumu yığına koyar.
+function pushHistory(){
+  if (_suspendHistory) return;
+  history.push(snapshot());
+  if (history.length > HISTORY_MAX) history.shift();
+  future = []; // yeni bir eylem redo zincirini bozar
+  updateUndoRedoButtons();
+}
+
+function undo(){
+  if (!history.length) { showToast('Geri alınacak işlem yok.'); return; }
+  future.push(snapshot());
+  sel = history.pop();
+  renderList(); renderSelPanel(); recalc(); saveSession();
+  updateUndoRedoButtons();
+  showToast('Geri alındı.', 'info', 1600);
+}
+
+function redo(){
+  if (!future.length) { showToast('Yinelenecek işlem yok.'); return; }
+  history.push(snapshot());
+  sel = future.pop();
+  renderList(); renderSelPanel(); recalc(); saveSession();
+  updateUndoRedoButtons();
+  showToast('Yinelendi.', 'info', 1600);
+}
+
+function updateUndoRedoButtons(){
+  const u = document.getElementById('undoBtn');
+  const r = document.getElementById('redoBtn');
+  if (u) u.disabled = !history.length;
+  if (r) r.disabled = !future.length;
+}
+
 const LS_KEY = 'balthazard_session';
 
 function saveSession() {
@@ -3352,6 +3394,7 @@ function toggleItemWithBranch(id, branchId) {
 function toggleItem(id) {
   const item = findItem(id);
   if (!item) return;
+  pushHistory();
   if (sel[id]) { delete sel[id]; }
   else {
     sel[id] = {
@@ -3370,6 +3413,7 @@ function toggleItemSide(baseId, side, branchId) {
   const item = findItem(baseId);
   if (!item) return;
   const bLabel = BRANCHES.find(b=>b.id===(branchId||curBranch))?.label||'';
+  pushHistory();
   if (sel[cid]) { delete sel[cid]; }
   else {
     sel[cid] = {
@@ -3416,6 +3460,18 @@ function renderSelPanel() {
     const wp = wpPct(it.rt, it.rp);
     const sideLabel = it.side==='L'?'Sol':it.side==='R'?'Sağ':null;
     const branchColor = BRANCHES.find(b=>b.label===it.branch)?.color||'#64748b';
+    // Bilateral özet: bu öğe bir tarafsa ve eşi de seçiliyse, birleşik TVE'yi göster.
+    let bilatSummary = '';
+    if (it.side==='L' || it.side==='R') {
+      const baseId = id.replace(/_[LR]$/,'');
+      const L = sel[baseId+'_L'], R = sel[baseId+'_R'];
+      if (L && R && it.side==='L') { // yalnız Sol satırında bir kez göster
+        const wpL = wpPct(L.rt, L.rp), wpR = wpPct(R.rt, R.rp);
+        const pL = wpL/100, pR = wpR/100;
+        const combined = Math.round((pL + pR - pL*pR)*100); // Balthazard (TVE düzeyinde)
+        bilatSummary = `<div class="bilat-sum">⚖️ Sol: %${wpL} / Sağ: %${wpR} → Birleşik (TVE): <strong>%${combined}</strong></div>`;
+      }
+    }
     html += `
       <div class="sitem">
         <div class="sitem-top">
@@ -3447,6 +3503,7 @@ function renderSelPanel() {
 }
 
 function removeItem(id) {
+  pushHistory();
   delete sel[id];
   renderList();
   renderSelPanel();
@@ -3457,6 +3514,32 @@ function removeItem(id) {
 // ═══════════════════════════════════════════════════
 // BALTHAZARD CALCULATION
 // ═══════════════════════════════════════════════════
+// Tüm seçili engelleri Balthazard ile birleştirir; istatistik de döndürür.
+function computeResult() {
+  const items = Object.entries(sel).map(([id,it])=>({
+    id, name:it.name, branch:it.branch, side:it.side||null,
+    rt:it.rt, rp:it.rp, wp: wpPct(it.rt, it.rp)
+  })).sort((a,b)=>b.wp-a.wp);
+
+  let rem=1.0, cum=0.0;
+  items.forEach(it=>{ const p=it.wp/100; cum+=rem*p; rem*=(1-p); });
+  const final = Math.round(cum*100);
+
+  // İstatistikler
+  const perBranch = {};
+  let highest = null, branchMaxWp = {};
+  items.forEach(it=>{
+    perBranch[it.branch] = (perBranch[it.branch]||0)+1;
+    branchMaxWp[it.branch] = Math.max(branchMaxWp[it.branch]||0, it.wp);
+    if (!highest || it.wp > highest.wp) highest = it;
+  });
+  // En çok katkı sağlayan branş = en yüksek tekil TVE'ye sahip branş
+  let topBranch = null, topWp = -1;
+  for (const b in branchMaxWp){ if (branchMaxWp[b] > topWp){ topWp = branchMaxWp[b]; topBranch = b; } }
+
+  return { items, final, perBranch, highest, topBranch, total: items.length };
+}
+
 function recalc() {
   const items = Object.entries(sel).map(([id,it])=>({
     id, name:it.name, wp: wpPct(it.rt, it.rp)
@@ -3473,6 +3556,8 @@ function recalc() {
     sc.style.display='none';
     rb.className='rbox empty';
     rb.innerHTML='<div style="color:var(--ink4);font-size:.83rem;padding:16px 0;line-height:1.8"><span style="font-size:1.8rem;display:block;margin-bottom:6px">🔢</span>Engel seçildiğinde otomatik hesaplanır.</div>';
+    const statsCard = document.getElementById('statsCard');
+    if (statsCard) statsCard.style.display='none';
     return;
   }
 
@@ -3501,7 +3586,11 @@ function recalc() {
     <div class="rpct" id="rpctNum"><span class="rpct-unit">%</span><span id="rpctVal">0</span></div>
     <div class="rlabel">Birleşik Engel Oranı · Balthazard Formülü</div>
     <div class="rbar-wrap"><div class="rbar" id="rbarEl" style="width:0%"></div></div>
-    <div class="rcls ${cls.css}">${cls.label}</div>`;
+    <div class="rcls ${cls.css}">
+      <span class="sev-dot" style="background:${cls.color}"></span>${cls.short} · ${cls.label}
+    </div>
+    ${cls.ministry?`<div class="rministry">🏛️ ${cls.ministry}</div>`:''}`;
+  renderStats();
   // count-up animation
   requestAnimationFrame(() => {
     const el = document.getElementById('rpctVal');
@@ -3523,11 +3612,47 @@ function recalc() {
 }
 
 function getClass(p){
-  if(p<20) return {css:'c0',label:'Engelli sayılmaz (%0-19)'};
-  if(p<40) return {css:'c1',label:'Hafif düzeyde engellilik (%20-39)'};
-  if(p<60) return {css:'c2',label:'Orta düzeyde engellilik (%40-59)'};
-  if(p<80) return {css:'c3',label:'Ağır düzeyde engellilik (%60-79)'};
-  return {css:'c4',label:'Tam bağımlı engellilik (%80-100)'};
+  let base;
+  if(p<20)      base = {css:'c0', short:'Engelsiz', label:'Engelli sayılmaz (%0-19)',        color:'#166534'};
+  else if(p<40) base = {css:'c1', short:'Hafif',    label:'Hafif düzeyde engellilik (%20-39)', color:'#b45309'};
+  else if(p<60) base = {css:'c2', short:'Orta',     label:'Orta düzeyde engellilik (%40-59)',  color:'#c2410c'};
+  else if(p<80) base = {css:'c3', short:'Ağır',     label:'Ağır düzeyde engellilik (%60-79)',  color:'#be123c'};
+  else          base = {css:'c4', short:'Tam',      label:'Tam bağımlı engellilik (%80-100)',  color:'#6d28d9'};
+
+  // Sağlık Bakanlığı engellilik kategorisi eşikleri
+  let ministry = null;
+  if(p>=80)      ministry = 'Ağır engellilik / tam bağımlı (%80+)';
+  else if(p>=50) ministry = 'Engelli birey hakları kapsamı (%50+)';
+  else if(p>=40) ministry = 'Engellilik kimlik kartı / haklar (%40+)';
+  base.ministry = ministry;
+  return base;
+}
+
+// ── İSTATİSTİK PANELİ ──
+function renderStats(){
+  const card = document.getElementById('statsCard');
+  const body = document.getElementById('statsBody');
+  if (!card || !body) return;
+  const r = computeResult();
+  if (!r.total){ card.style.display='none'; return; }
+  card.style.display='';
+
+  const branchRows = Object.entries(r.perBranch)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([b,c])=>{
+      const color = BRANCHES.find(x=>x.label===b)?.color||'#64748b';
+      return `<div class="stat-brow"><span class="stat-bdot" style="background:${color}"></span><span class="stat-bname">${b}</span><span class="stat-bcnt">${c}</span></div>`;
+    }).join('');
+
+  const hi = r.highest;
+  body.innerHTML = `
+    <div class="stat-cards">
+      <div class="stat-card"><div class="stat-num">${r.total}</div><div class="stat-cap">Toplam engel</div></div>
+      <div class="stat-card"><div class="stat-num">%${hi?hi.wp:0}</div><div class="stat-cap">En yüksek tekil (TVE)</div></div>
+    </div>
+    ${hi?`<div class="stat-line"><strong>En yüksek engel:</strong> ${hi.name}${hi.side?` (${hi.side==='L'?'Sol':'Sağ'})`:''}</div>`:''}
+    ${r.topBranch?`<div class="stat-line"><strong>En çok katkı sağlayan branş:</strong> ${r.topBranch}</div>`:''}
+    <div class="stat-bbreak">${branchRows}</div>`;
 }
 
 // ═══════════════════════════════════════════════════
@@ -3559,6 +3684,62 @@ function copyResult() {
     .catch(()=>showToast('Kopyalama başarısız.','error'));
 }
 
+// ── JSON RAPOR İNDİR ──
+function exportJSON() {
+  const r = computeResult();
+  if (!r.total) { showToast('Önce engel seçin.'); return; }
+  const pv = id => document.getElementById(id)?.value || '';
+  const cls = getClass(r.final);
+  const now = new Date();
+  const report = {
+    rapor: {
+      tip: 'Balthazard Engel Oranı Raporu',
+      olusturmaTarihi: now.toISOString(),
+      olusturmaTarihiYerel: now.toLocaleString('tr-TR'),
+    },
+    hasta: {
+      adSoyad: pv('pName'),
+      tcKimlikNo: pv('pTC'),
+      dogumTarihi: pv('pDOB'),
+      cinsiyet: pv('pGender'),
+      kurum: pv('pInst'),
+      raporTarihi: pv('pDate'),
+      uzmanHekim: pv('pDoc'),
+      uzmanlikDali: pv('pSpec'),
+    },
+    seciliEngeller: r.items.map(it => ({
+      ad: it.name,
+      brans: it.branch,
+      taraf: it.side === 'L' ? 'Sol' : it.side === 'R' ? 'Sağ' : null,
+      bolgeTipi: it.rt,
+      bolgeOrani: it.rp,
+      tveOrani: it.wp,
+      donusumZinciri: chainSteps(it.rt, it.rp).map(s => ({ duzey: s.l, oran: s.p })),
+    })),
+    sonuc: {
+      balthazardBirlesikOran: r.final,
+      siniflandirma: cls.short,
+      siniflandirmaAciklama: cls.label,
+      saglikBakanligiKategorisi: cls.ministry,
+      toplamEngelSayisi: r.total,
+      enYuksekTekilEngel: r.highest ? { ad: r.highest.name, tveOrani: r.highest.wp } : null,
+      enCokKatkiBrans: r.topBranch,
+    },
+  };
+  const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeName = (pv('pName') || 'hasta').replace(/[^\wığüşöçİĞÜŞÖÇ ]/g, '').trim().replace(/\s+/g, '_') || 'hasta';
+  const dstr = now.toISOString().slice(0,10);
+  a.href = url;
+  a.download = `balthazard_rapor_${safeName}_${dstr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('Rapor JSON olarak indirildi.', 'success');
+}
+
 function validateTC(input) {
   const v = input.value.trim();
   const el = document.getElementById('pTCval');
@@ -3574,8 +3755,6 @@ function validateTC(input) {
     el.textContent='✗'; el.style.color='#dc2626'; el.style.display='block';
   }
 }
-
-let undoStack = null;
 
 function calcAge() {
   const dob = document.getElementById('pDOB').value;
@@ -3621,13 +3800,13 @@ function updateWarnings() {
 
 function clearAll(){
   if(!Object.keys(sel).length) return;
-  undoStack = JSON.parse(JSON.stringify(sel));
+  pushHistory();
   sel={};
   renderList();
   renderSelPanel();
   recalc();
   saveSession();
-  showToast('Temizlendi. <button onclick="undoClear()" style="margin-left:8px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.75rem;font-weight:600">Geri Al</button>', 'info', 6000);
+  showToast('Temizlendi. <button onclick="undo()" style="margin-left:8px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.75rem;font-weight:600">Geri Al</button>', 'info', 6000);
 }
 
 function jumpToCat(anchorId) {
@@ -3638,19 +3817,6 @@ function jumpToCat(anchorId) {
   const barH = bar ? bar.offsetHeight : 0;
   // el.offsetTop is relative to dlist (its scroll container)
   dl.scrollTop = el.offsetTop - barH - 4;
-}
-
-function undoClear(){
-  if(!undoStack) return;
-  sel = undoStack;
-  undoStack = null;
-  renderList();
-  renderSelPanel();
-  recalc();
-  saveSession();
-  // remove lingering toasts
-  document.querySelectorAll('.toast').forEach(t=>t.remove());
-  showToast('Seçimler geri yüklendi.','success');
 }
 
 function showToast(msg, type='info', duration=2800){
@@ -3775,6 +3941,7 @@ function calcHearing() {
 function addHearingResult() {
   if (!_hResult) return;
   const id = 'hearing_calc_' + Date.now();
+  pushHistory();
   const { bin, rate, sumL, sumR } = _hResult;
   const ENT_LABEL = BRANCHES.find(b=>b.id==='ent')?.label || 'KBB';
   sel[id] = {
