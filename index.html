@@ -705,6 +705,12 @@ header{
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v8M5 7l3 3 3-3" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12v1a1 1 0 001 1h8a1 1 0 001-1v-1" stroke-linecap="round"/></svg>
           Rapor İndir
         </button>
+        <button class="btn btn-o" onclick="triggerImport()" title="Daha önce indirilen JSON raporu geri yükle">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 14V6M5 9l3-3 3 3" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 4V3a1 1 0 011-1h8a1 1 0 011 1v1" stroke-linecap="round"/></svg>
+          Rapor Yükle
+        </button>
+        <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importReport(this)">
+
         <button class="btn btn-o" onclick="copyResult()">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="5" width="8" height="9" rx="1"/><path d="M3 11V3a1 1 0 011-1h7"/></svg>
           Kopyala
@@ -3870,6 +3876,16 @@ function exportJSON() {
       enYuksekTekilEngel: r.highest ? { ad: r.highest.name, tveOrani: r.highest.wp } : null,
       enCokKatkiBrans: r.topBranch,
     },
+    // Makine tarafından okunabilen durum — "Rapor Yükle" ile geri yükleme için
+    _state: {
+      version: 1,
+      sel: sel,
+      patient: (() => {
+        const p = {};
+        ['pName','pTC','pDOB','pGender','pInst','pDate','pDoc','pSpec'].forEach(id => { p[id] = pv(id); });
+        return p;
+      })(),
+    },
   };
   const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -3883,6 +3899,50 @@ function exportJSON() {
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   showToast('Rapor JSON olarak indirildi.', 'success');
+}
+
+// ── JSON RAPOR YÜKLE ──
+function triggerImport() {
+  document.getElementById('importFile').click();
+}
+
+function importReport(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    let data;
+    try { data = JSON.parse(e.target.result); }
+    catch(err) { showToast('Dosya okunamadı: geçersiz JSON.', 'error'); input.value=''; return; }
+    const st = data._state;
+    if (!st || typeof st.sel !== 'object' || st.sel === null) {
+      showToast('Bu dosya geri yüklenebilir durum içermiyor.', 'error'); input.value=''; return;
+    }
+    // Sadece veri kümesinde hâlâ var olan engelleri geri yükle
+    const restored = {};
+    let dropped = 0;
+    Object.entries(st.sel).forEach(([key, val]) => {
+      const baseId = key.replace(/_(L|R)$/, '');
+      if (findItem(baseId)) restored[key] = val;
+      else dropped++;
+    });
+    pushHistory();
+    sel = restored;
+    if (st.patient) {
+      Object.entries(st.patient).forEach(([id, v]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = v || '';
+      });
+      calcAge();
+    }
+    renderList(); renderSelPanel(); recalc(); saveSession(); updateWarnings();
+    const n = Object.keys(restored).length;
+    showToast(dropped ? `${n} engel yüklendi (${dropped} tanı artık listede yok, atlandı).`
+                      : `${n} engel başarıyla yüklendi.`, dropped ? 'info' : 'success');
+    input.value = '';
+  };
+  reader.onerror = () => { showToast('Dosya okunamadı.', 'error'); input.value=''; };
+  reader.readAsText(file);
 }
 
 function validateTC(input) {
