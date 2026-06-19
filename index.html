@@ -710,6 +710,10 @@ header{
           Rapor Yükle
         </button>
         <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importReport(this)">
+        <button class="btn btn-o" onclick="openScaleGlossary()" title="MSK/Nöroloji puanlamasında kullanılan standart skalaların (EDSS, ASIA, mRS, GOS, Hoehn-Yahr, House-Brackmann, MRC, KDS/CDR, SARA, Tablo 4.1-4.2c) tam kriterleri">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 11v-1.5c0-.5.3-.8.8-1.1.6-.4 1-.9 1-1.6a1.8 1.8 0 00-3.6-.2" stroke-linecap="round"/><circle cx="8" cy="13" r=".3" fill="currentColor"/></svg>
+          Skala Rehberi
+        </button>
 
         <button class="btn btn-o" onclick="copyResult()">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="5" width="8" height="9" rx="1"/><path d="M3 11V3a1 1 0 011-1h7"/></svg>
@@ -779,6 +783,23 @@ header{
       <button class="btn btn-p" onclick="calcHearing()">Hesapla</button>
       <button class="btn btn-o" id="hAddBtn" style="display:none" onclick="addHearingResult()">Seçilenlere Ekle</button>
       <button class="btn" style="background:var(--bg);color:var(--ink3);border:1.5px solid var(--card-border)" onclick="closeHearing()">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SKALA REHBERİ MODALİ ═══ -->
+<div id="scaleModal" class="hmodal-overlay" style="display:none" onclick="if(event.target===this)closeScaleGlossary()">
+  <div class="hmodal" style="max-width:720px">
+    <div class="hmodal-head">
+      <span>📖 Skala Rehberi — MSK &amp; Nöroloji Puanlama Kriterleri</span>
+      <button onclick="closeScaleGlossary()" class="hmodal-close">×</button>
+    </div>
+    <div class="hmodal-body" style="max-height:70vh;overflow-y:auto">
+      <p class="hmodal-note">Aşağıdaki skalalar, MSK ve Nöroloji bölümündeki tanı açıklamalarında atıfta bulunulan standart ölçüm araçlarıdır. Hastayı bu kriterlere göre derecelendirip, ilgili dereceye karşılık gelen tanı kartını seçiniz.</p>
+      <div id="scaleGlossaryBody"></div>
+    </div>
+    <div class="hmodal-foot">
+      <button class="btn" style="background:var(--bg);color:var(--ink3);border:1.5px solid var(--card-border)" onclick="closeScaleGlossary()">Kapat</button>
     </div>
   </div>
 </div>
@@ -4176,6 +4197,89 @@ function openHearing() {
 
 function closeHearing() {
   document.getElementById('hearingModal').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════
+// SKALA REHBERİ — standart klinik skalaların tam kriterleri
+// ═══════════════════════════════════════════════════
+const SCALE_GLOSSARY = [
+  { k:'Hoehn-Yahr', t:'Hoehn-Yahr Evrelemesi (Parkinson Hastalığı)', d:`Evre 1: Tek taraflı (unilateral) tutulum, fonksiyonel kısıtlılık yok veya minimal.
+Evre 2: Bilateral veya orta hat tutulumu, denge bozukluğu yok.
+Evre 3: Bilateral tutulum + hafif-orta postural instabilite; fonksiyonel olarak bağımsız.
+Evre 4: Ciddi disabilite; yardımsız ayakta durabilir/yürüyebilir ama belirgin kısıtlı.
+Evre 5: Yardımsız hareket edemez; tekerlekli sandalye veya yatağa bağımlı.` },
+  { k:'EDSS', t:'EDSS — Expanded Disability Status Scale (Multipl Skleroz)', d:`0: Normal nörolojik muayene.
+1–1.5: Bulgu var, özürlülük yok.
+2–2.5: Minimal özürlülük, bir fonksiyonel sistemde hafif bulgu.
+3–3.5: Orta özürlülük, ambulatuar; günlük aktivitede kısıtlama yok/az.
+4–4.5: Ciddi özürlülük; yardımsız ve dinlenmeden ≥500 m yürüyebilir, çoğunlukla işini sürdürür.
+5–5.5: Yürüme mesafesi 200–300 m'ye düşmüş; günlük aktivite belirgin kısıtlı.
+6–6.5: Yürümek için tek taraflı (6) veya iki taraflı (6.5) destek (baston/yürüteç) gerekir.
+7–7.5: Tekerlekli sandalyeye bağımlı; bağımsız transfer yapabilir (7) veya yardım gerekir (7.5).
+8–8.5: Günün büyük kısmı yatakta/sandalyede; üst ekstremite fonksiyonu kısmen korunmuş.
+9–9.5: Tam bağımlı, yatağa bağımlı; iletişim ve yemek yeme kısıtlı.
+10: Ölüm (MS'e bağlı).` },
+  { k:'ASIA', t:'ASIA Bozukluk Skalası (AIS) — Omurilik Yaralanması', d:`A — Komplet: Sakral segmentlerde (S4-S5) motor ve duysal fonksiyon yok.
+B — Duysal İnkomplet: Nörolojik seviye altında duyu korunmuş, motor fonksiyon yok (sakral segmentler dahil).
+C — Motor İnkomplet: Nörolojik seviye altında motor fonksiyon korunmuş; anahtar kasların yarısından fazlası kas gücü <3 (MRC).
+D — Motor İnkomplet: Nörolojik seviye altında anahtar kasların en az yarısı kas gücü ≥3 (MRC).
+E — Normal: Motor ve duysal fonksiyon normal (önceden defisit öyküsü olabilir).` },
+  { k:'mRS', t:'mRS — Modifiye Rankin Skalası (İnme/Serebrovasküler Olay)', d:`0: Semptom yok.
+1: Semptom var, anlamlı özürlülük yok; tüm olağan aktiviteler sürdürülebiliyor.
+2: Hafif özürlülük; önceki aktivitelerin tamamını yapamıyor ama kendi işlerini bağımsız görüyor.
+3: Orta özürlülük; bir ölçüde yardım gerekir ama yardımsız yürüyebilir.
+4: Orta-ağır özürlülük; yardımsız yürüyemez, bakım ihtiyaçları için yardım gerekir.
+5: Ağır özürlülük; yatağa bağımlı, idrar/gaita inkontinansı, sürekli bakım ve gözetim gerekir.
+6: Ölüm.` },
+  { k:'GOS', t:'GOS — Glasgow Outcome Scale (Kafa Travması)', d:`1: Ölüm.
+2: Kalıcı vejetatif durum (göz açma var, çevre ile etkileşim yok).
+3: Ağır özürlülük; bilinçli ama günlük yaşamda başkasına bağımlı (24 saat bakım gerekir).
+4: Orta özürlülük; bağımsız yaşar ama eski iş/sosyal aktivitelerine tam dönemez (kognitif/motor defisit).
+5: İyi iyileşme; normal yaşama dönüş, hafif rezidüel defisit olabilir.` },
+  { k:'House-Brackmann', t:'House-Brackmann Skalası (Fasiyal Sinir Felci)', d:`Evre I: Normal fasiyal fonksiyon.
+Evre II: Hafif disfonksiyon; gözle fark edilir hafif zayıflık, dinlenmede normal simetri.
+Evre III: Orta disfonksiyon; belirgin asimetri var ama göz tam kapanır, hafif sinkinezi.
+Evre IV: Orta-ağır disfonksiyon; belirgin zayıflık ve/veya asimetrik deformite, göz kapanmaz.
+Evre V: Ağır disfonksiyon; sadece zar zor algılanan hareket, dinlenmede asimetri.
+Evre VI: Total paralizi; hiç hareket yok.` },
+  { k:'MRC', t:'MRC Kas Gücü Skalası (0-5)', d:`0: Hiç kontraksiyon yok (tam paralizi).
+1: Görülebilir/palpe edilebilir kontraksiyon var, eklem hareketi yok.
+2: Yerçekimi ortadan kaldırıldığında (örn. yatay düzlemde) tam hareket.
+3: Yerçekimine karşı tam hareket, ek dirence karşı koyamaz.
+4: Dirence karşı hareket var ama normalden zayıf.
+5: Normal kas kuvveti.` },
+  { k:'KDS/CDR', t:'KDS / CDR — Klinik Demans Skalası (Clinical Dementia Rating)', d:`0: Demans yok; bellek, oryantasyon, yargı, sosyal/ev içi işlev ve kişisel bakım tamamen normal.
+0.5: Şüpheli/çok hafif; hafif unutkanlık dışında belirgin bulgu yok.
+1: Hafif demans; orta derecede bellek kaybı, karmaşık problem çözme ve dış işlerde belirgin bozulma, ev içinde ve bakımda bağımsız.
+2: Orta demans; ciddi bellek kaybı, sadece basit görevleri yapabilir, giyinme/bakımda yardım gerekir.
+3: Ağır demans; bellek sadece parça parça, kişiler arasında ayrım yapamaz, tam bakım bağımlılığı.
+Not: KDS evresi, EK-2 Tablo'daki ilgili nörodejeneratif/demans yüzdesine çevrilirken karttaki TVE aralığı esas alınır.` },
+  { k:'SARA', t:'SARA — Scale for the Assessment and Rating of Ataxia (0-40)', d:`8 alt madde (yürüme, duruş, oturma, konuşma bozukluğu, ince parmak takibi, burun-parmak testi, el dizalterne hareketi, topuk-diz-kaymak testi) toplanarak 0 (ataksi yok) ile 40 (en ağır ataksi) arası puanlanır.
+0-3: Hafif; 4-13: Orta; 14-23: Belirgin; ≥24: Ağır/çok ağır ataksi olarak yorumlanır.` },
+  { k:'UPDRS', t:'UPDRS — Unified Parkinson Disease Rating Scale (Motor Bölüm)', d:`Tremor, rijidite, bradikinezi, postural instabilite, yürüme gibi motor bulgular her madde için 0 (yok) – 4 (en ağır) arası puanlanır; toplam motor skor, Hoehn-Yahr evresi ile birlikte hastalık şiddetini sınıflamak için kullanılır.` },
+  { k:'Tablo 4.1', t:"EK-2 Tablo 4.1 — CNS/Spinal Yürüme ve Hareket Bozukluğu (4 Dereceli)", d:`Hafif: Yardımsız yürür, günlük aktivitede minimal kısıtlılık.
+Orta: Tek yardımcı cihazla (baston/AFO) yürür, mesafe/denge kısıtlı.
+Ağır: İki yardımcı cihaz veya yürüteç gerekir, mesafe çok kısıtlı.
+Çok Ağır: Yürüyemez; tekerlekli sandalyeye bağımlı.
+Her derece, ilgili tanı kartındaki TVE yüzde aralığına karşılık gelir; kart üzerindeki yüzde bu dereceleme ile uyumlu olarak seçilir.` },
+  { k:'Tablo 4.2a', t:'EK-2 Tablo 4.2a — CNS/Spinal Tek Üst Ekstremite Bozukluğu', d:`Tek üst ekstremitede güç kaybı/spastisite/koordinasyon bozukluğunun günlük yaşam aktivitelerine (giyinme, yazma, kavrama) etkisine göre hafif/orta/ağır/çok ağır olarak derecelendirilir; MRC kas gücü ve fonksiyonel test (örn. Jamar dinamometre) ile desteklenir.` },
+  { k:'Tablo 4.2b', t:'EK-2 Tablo 4.2b — CNS/Spinal Her İki Üst Ekstremite Bozukluğu', d:`Bilateral üst ekstremite tutulumunda, daha az tutulan tarafın fonksiyonu da dikkate alınarak hafif/orta/ağır/çok ağır derecelendirme yapılır; tam bilateral fonksiyon kaybı en ağır dereceye karşılık gelir.` },
+  { k:'Tablo 4.2c', t:'EK-2 Tablo 4.2c — CNS/Spinal Alt Ekstremite ve Kombine Bozukluk', d:`Alt ekstremite motor/duysal kaybının yürüme ve denge üzerindeki etkisi, gerektiğinde üst ekstremite tutulumu ile birlikte değerlendirilerek hafif/orta/ağır/çok ağır olarak sınıflandırılır.` },
+];
+
+function openScaleGlossary() {
+  const body = document.getElementById('scaleGlossaryBody');
+  body.innerHTML = SCALE_GLOSSARY.map(s => `
+    <div style="margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--card-border)">
+      <div style="font-weight:700;font-size:.86rem;color:var(--ink);margin-bottom:4px">${s.t}</div>
+      <div style="font-size:.78rem;color:var(--ink3);line-height:1.6;white-space:pre-line">${s.d}</div>
+    </div>
+  `).join('');
+  document.getElementById('scaleModal').style.display = 'flex';
+}
+
+function closeScaleGlossary() {
+  document.getElementById('scaleModal').style.display = 'none';
 }
 
 // ═══════════════════════════════════════════════════
