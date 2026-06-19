@@ -119,16 +119,37 @@ header{
   display:flex;align-items:flex-start;gap:8px;padding:8px 10px;
   border-radius:var(--radius-xs);border:1.5px solid transparent;
   background:transparent;cursor:pointer;transition:all .12s;
-  min-height:44px;/* touch target */
+  min-height:44px;flex-shrink:0;/* touch target — shrink:0 so long clinical text never collapses/overlaps siblings */
 }
 .ditem:hover{border-color:var(--brand-ring);background:var(--brand-bg);}
-.ditem.sel{border-color:#93c5fd;background:#eff6ff;}
+.ditem.sel{border-color:var(--brand-ring);background:var(--brand-bg);border-left:3px solid var(--brand);}
 .ditem input[type=checkbox]{width:16px;height:16px;accent-color:var(--brand);cursor:pointer;flex-shrink:0;margin-top:3px;}
 
 .dname{flex:1;min-width:0;}
 .dname-title{font-size:.82rem;line-height:1.35;color:var(--ink);font-weight:500;}
 .ditem.sel .dname-title{color:var(--brand-d);font-weight:600;}
-.dsub{font-size:.69rem;color:var(--ink3);display:block;margin-top:2px;line-height:1.4;}
+.dsub{font-size:.72rem;color:var(--ink3);display:block;margin-top:3px;line-height:1.55;}
+
+/* ── INLINE CLINICAL BADGES (TVE %, Tablo ref, Skala Rehberi) ── */
+.tve-badge{
+  display:inline-block;background:var(--green-bg);color:var(--green);
+  border:1px solid #bbf7d0;border-radius:4px;padding:0 5px;
+  font-weight:700;font-size:.95em;white-space:nowrap;
+}
+.tablo-badge{
+  display:inline-block;background:var(--bg);color:var(--ink2);
+  border:1px solid var(--card-border);border-radius:4px;padding:0 5px;
+  font-weight:600;white-space:nowrap;
+}
+.scale-badge{
+  display:inline-block;background:var(--purple-bg);color:var(--purple);
+  border:1px solid #ddd6fe;border-radius:4px;padding:0 5px;
+  font-weight:700;cursor:pointer;white-space:nowrap;
+}
+.scale-badge:hover{background:#ede9fe;text-decoration:underline;}
+
+/* ── CATEGORY ICON ── */
+.cath-ico{font-size:.85rem;line-height:1;}
 
 .rbadge{
   font-size:.62rem;background:var(--bg);color:var(--ink3);
@@ -3275,6 +3296,7 @@ function loadSession() {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('pDate').valueAsDate = new Date();
   loadSession();
+  applyBranchTheme(curBranch);
   renderBranchTabs();
   renderList();
   renderSelPanel();
@@ -3406,8 +3428,66 @@ function switchBranch(id){
   if (cb) cb.checked = false;
   const hBtn = document.getElementById('hearingBtn');
   if (hBtn) hBtn.style.display = id === 'ent' ? 'block' : 'none';
+  applyBranchTheme(id);
   renderBranchTabs();
   renderList();
+}
+
+// ═══════════════════════════════════════════════════
+// BRANŞA ÖZEL RENK TEMASI — aktif branşın rengini --brand
+// CSS değişkenlerine yansıtır (liste, rozet, seçim vurgusu vb.)
+// ═══════════════════════════════════════════════════
+function mixHex(hex, target, amt) {
+  const h = hex.replace('#','');
+  const r1 = parseInt(h.slice(0,2),16), g1 = parseInt(h.slice(2,4),16), b1 = parseInt(h.slice(4,6),16);
+  const r2 = target===  '#fff' ? 255 : 0, g2 = r2, b2 = r2;
+  const mix = (a,b) => Math.round(a + (b-a)*amt);
+  const toHex = v => v.toString(16).padStart(2,'0');
+  return '#' + toHex(mix(r1,r2)) + toHex(mix(g1,g2)) + toHex(mix(b1,b2));
+}
+function applyBranchTheme(id) {
+  const b = BRANCHES.find(x=>x.id===id);
+  if (!b) return;
+  const root = document.documentElement.style;
+  root.setProperty('--brand', b.color);
+  root.setProperty('--brand-d', mixHex(b.color, '#000', .28));
+  root.setProperty('--brand-l', mixHex(b.color, '#fff', .25));
+  root.setProperty('--brand-bg', mixHex(b.color, '#fff', .94));
+  root.setProperty('--brand-ring', mixHex(b.color, '#fff', .72));
+}
+
+function catIcon(branchId, catName) {
+  const c = (catName||'').toLowerCase();
+  if (branchId === 'msk') {
+    if (/omurga|servikal|lomber|torakal|skolyoz|disk|vertebr/.test(c)) return '🦴';
+    if (/diz|patell|menisk/.test(c)) return '🦵';
+    if (/ayak|topuk|aşil/.test(c)) return '🦶';
+    if (/el |parmak|başparmak|bilek/.test(c)) return '✋';
+    if (/omuz|dirsek|kol/.test(c)) return '💪';
+    if (/kalça/.test(c)) return '🦴';
+    if (/ampüt/.test(c)) return '🩹';
+    return '🦴';
+  }
+  if (branchId === 'neuro') {
+    if (/afazi|kortikal/.test(c)) return '🗣️';
+    if (/demans|kognitif/.test(c)) return '🧠';
+    if (/epilepsi/.test(c)) return '⚡';
+    if (/parkinson|hareket bozuk/.test(c)) return '🧍';
+    if (/uyku/.test(c)) return '😴';
+    if (/ağrı|nevralji/.test(c)) return '⚡';
+    if (/omurilik|spinal/.test(c)) return '🩻';
+    return '🧠';
+  }
+  return '';
+}
+
+function prettySub(text) {
+  if (!text) return text;
+  let out = text;
+  out = out.replace(/TVE\s*[=~]\s*%\d+(?:[.\-–]\d+)*/g, m => `<span class="tve-badge">${m.trim()}</span>`);
+  out = out.replace(/\[Skala Rehberi:[^\]]*\]/g, m => `<span class="scale-badge" onclick="event.stopPropagation();openScaleGlossary()" title="Tam dereceleme kriterleri için tıklayın">${m.slice(1,-1)}</span>`);
+  out = out.replace(/Tablo\s?\d+(\.\d+)?[a-c]?/g, m => `<span class="tablo-badge">${m}</span>`);
+  return out;
 }
 
 // ═══════════════════════════════════════════════════
@@ -3448,7 +3528,7 @@ function highlight(text, q) {
 function buildItemHtml(it, q, branchId) {
   const chain = RC[it.rt]||RC.whole;
   const nameHl = highlight(it.name, q);
-  const subHl = it.sub ? highlight(it.sub, q) : '';
+  const subHl = it.sub ? highlight(prettySub(it.sub), q) : '';
   let html = '';
   if(isBilat(it.rt)){
     const selL=!!sel[it.id+'_L'], selR=!!sel[it.id+'_R'];
@@ -3526,7 +3606,8 @@ function renderList() {
       const selInCat = cat.items.filter(i => sel[i.id] || sel[i.id+'_L'] || sel[i.id+'_R']).length;
       const catAnchor = 'cat-anchor-' + branchId + '-' + catIdx;
       if (!allMode) jumpCats.push({label: cat.cat, anchor: catAnchor, sel: selInCat});
-      branchHtml += `<div class="cath" id="${catAnchor}">${cat.cat}<span class="cath-count">${items.length}</span>${selInCat>0?`<span class="cath-sel">${selInCat} seçili</span>`:''}${isROM?'<span class="cath-romtag">ARİTMETİK TOPLAM</span>':''}${isGait?'<span class="cath-romtag" style="color:#9a3412;background:#fff7ed;border-color:#fed7aa">TEK BAŞINA</span>':''}</div>`;
+      const icon = catIcon(branchId, cat.cat);
+      branchHtml += `<div class="cath" id="${catAnchor}">${icon?`<span class="cath-ico">${icon}</span>`:''}${cat.cat}<span class="cath-count">${items.length}</span>${selInCat>0?`<span class="cath-sel">${selInCat} seçili</span>`:''}${isROM?'<span class="cath-romtag">ARİTMETİK TOPLAM</span>':''}${isGait?'<span class="cath-romtag" style="color:#9a3412;background:#fff7ed;border-color:#fed7aa">TEK BAŞINA</span>':''}</div>`;
       for (const it of items) {
         branchHtml += buildItemHtml(it, q, branchId);
       }
