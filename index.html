@@ -547,7 +547,7 @@ header{
           <div class="swrap no-print">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6.5" cy="6.5" r="4"/><path d="M11 11l2.5 2.5" stroke-linecap="round"/></svg>
             <input type="text" id="search" placeholder="Tanı veya engel adı ara…  (Ctrl+K)" oninput="onSearch(this)"/>
-            <button class="sclear" id="sclear" onclick="clearSearch()" title="Temizle">×</button>
+            <button class="sclear" id="sclear" onclick="clearSearch()" title="Temizle" aria-label="Aramayı temizle">×</button>
           </div>
           <label class="allbranch-row no-print" id="allBranchRow" style="display:none">
             <input type="checkbox" id="allBranch" onchange="renderList()"/>
@@ -655,7 +655,7 @@ header{
   <div class="hmodal">
     <div class="hmodal-head">
       <span>🦻 İşitme Hesap Aracı — Tablo 1 &amp; 2 (ANSI 1969)</span>
-      <button onclick="closeHearing()" class="hmodal-close">×</button>
+      <button onclick="closeHearing()" class="hmodal-close" aria-label="Kapat">×</button>
     </div>
     <div class="hmodal-body">
       <p class="hmodal-note">Her kulak için 500, 1000, 2000, 4000 Hz eşiklerini dB olarak girin. Değerler 0–100 dB aralığında; 100 dB üzeri 100 olarak alınır.</p>
@@ -696,7 +696,7 @@ header{
   <div class="hmodal" style="max-width:720px">
     <div class="hmodal-head">
       <span>📖 Skala Rehberi — MSK &amp; Nöroloji Puanlama Kriterleri</span>
-      <button onclick="closeScaleGlossary()" class="hmodal-close">×</button>
+      <button onclick="closeScaleGlossary()" class="hmodal-close" aria-label="Kapat">×</button>
     </div>
     <div class="hmodal-body" style="max-height:70vh;overflow-y:auto">
       <p class="hmodal-note">Aşağıdaki skalalar, MSK ve Nöroloji bölümündeki tanı açıklamalarında atıfta bulunulan standart ölçüm araçlarıdır. Hastayı bu kriterlere göre derecelendirip, ilgili dereceye karşılık gelen tanı kartını seçiniz.</p>
@@ -3638,7 +3638,7 @@ function renderSelPanel() {
             <span class="sbranch" style="border-left:2px solid ${branchColor};">${it.branch}</span>
           </div>
           <span class="sitem-rp">%${it.rp}</span>
-          <button class="sdel" onclick="removeItem('${id}')" title="Kaldır">
+          <button class="sdel" onclick="removeItem('${id}')" title="Kaldır" aria-label="Kaldır">
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>
           </button>
         </div>
@@ -4069,7 +4069,7 @@ const HTABLE2 = [
   [44.3, 47.4, 32],
   [47.5, 49.9, 33],
   [50.0, 53.1, 34],
-  [54.2, 55.7, 35],
+  [53.2, 55.7, 35],
   [55.8, 58.8, 36],
   [58.9, 61.4, 37],
   [61.5, 64.5, 38],
