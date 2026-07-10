@@ -429,6 +429,24 @@ header{
 /* ── KLAVYE GEZİNME ── */
 .ditem.kbd-active{border-color:var(--brand-l)!important;background:var(--brand-bg)!important;box-shadow:0 0 0 2px var(--brand-ring);}
 
+/* ── ERİŞİLEBİLİRLİK: klavye odak halkaları (yalnızca klavye ile odakta görünür) ── */
+.btn:focus-visible,.btab:focus-visible,.sidebtn:focus-visible,.catjump-btn:focus-visible,
+.mob-tab-btn:focus-visible,.sdel:focus-visible,.hmodal-close:focus-visible,.mob-btn:focus-visible,
+.ditem input[type=checkbox]:focus-visible,.allbranch-row input:focus-visible,
+.pctl input[type=number]:focus-visible,.scale-badge:focus-visible{
+  outline:2px solid var(--brand);outline-offset:2px;border-radius:7px;
+}
+header .hbadge:focus-visible{outline:2px solid #fff;outline-offset:2px;}
+a:focus-visible{outline:2px solid var(--brand);outline-offset:2px;}
+
+/* ── HAREKET AZALTMA TERCİHİ (vestibüler duyarlılık / erişilebilirlik) ── */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important;
+  }
+}
+
 /* ── PRINT ── */
 .print-header{display:none;}
 @media print{
