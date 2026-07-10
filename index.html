@@ -93,6 +93,11 @@ header{
 .wrap{max-width:1460px;margin:0 auto;padding:24px 18px 96px;}
 .grid{display:grid;grid-template-columns:1fr 428px;gap:20px;align-items:start;}
 @media(max-width:980px){.grid{grid-template-columns:1fr;}}
+/* grid çocuklarının varsayılan min-width:auto değeri, nowrap sekme şeridini
+   sığdırmak için sütunu genişletip yatay taşmaya yol açar; min-width:0 ile
+   sütun 1fr/428px oranına uyar ve .btabs kendi içinde kayar. */
+.grid>.mob-panel{min-width:0;}
+.card,.cb{min-width:0;}
 
 /* ── CARD ── */
 .card{
@@ -201,7 +206,7 @@ header{
 .ditem.sel .rbadge{background:var(--brand-bg);color:var(--brand);border-color:var(--brand-ring);}
 
 .pctl{display:flex;align-items:center;gap:3px;flex-shrink:0;margin-top:1px;}
-.pctl input[type=number]{width:50px;border:1.5px solid var(--card-border);border-radius:var(--radius-xs);padding:4px 5px;font-size:.8rem;text-align:center;outline:none;font-family:inherit;color:var(--ink);background:var(--card);transition:border-color .15s,box-shadow .15s;}
+.pctl input[type=number]{width:58px;border:1.5px solid var(--card-border);border-radius:var(--radius-xs);padding:4px 4px;font-size:.8rem;text-align:center;outline:none;font-family:inherit;color:var(--ink);background:var(--card);transition:border-color .15s,box-shadow .15s;font-variant-numeric:tabular-nums;}
 .pctl input[type=number]:focus{border-color:var(--brand-l);box-shadow:var(--ring);}
 .pctl input[type=number]:disabled{background:var(--bg);color:var(--ink4);}
 .psign{font-size:.7rem;color:var(--ink3);font-weight:600;}
@@ -303,7 +308,7 @@ header{
 /* ── BILATERAL SEPARATE INPUTS ── */
 .bilat-pctl{flex-direction:column;align-items:flex-end;gap:3px;}
 .bilat-row{display:flex;align-items:center;gap:3px;}
-.bilat-row input[type=number]{width:46px;}
+.bilat-row input[type=number]{width:54px;}
 
 .cath-romtag{margin-left:auto;font-size:.6rem;color:var(--purple);background:var(--purple-bg);border:1px solid color-mix(in srgb,var(--purple) 30%,transparent);border-radius:5px;padding:0 6px;font-weight:600;letter-spacing:.01em;}
 
