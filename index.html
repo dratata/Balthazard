@@ -429,6 +429,20 @@ header{
 /* ── KLAVYE GEZİNME ── */
 .ditem.kbd-active{border-color:var(--brand-l)!important;background:var(--brand-bg)!important;box-shadow:0 0 0 2px var(--brand-ring);}
 
+/* ── KURUL KARARI / AÇIKLAMA (serbest metin) ── */
+.notes-ta{
+  width:100%;min-height:88px;resize:vertical;
+  border:1.5px solid var(--card-border);border-radius:var(--radius-xs);
+  padding:11px 13px;font-family:inherit;font-size:.84rem;line-height:1.65;
+  color:var(--ink);background:var(--bg);outline:none;
+  transition:border-color .18s,box-shadow .18s,background .18s;
+}
+.notes-ta::placeholder{color:var(--ink4);}
+.notes-ta:hover{border-color:var(--ink4);}
+.notes-ta:focus{border-color:var(--brand-l);box-shadow:var(--ring);background:var(--card);}
+.notes-ta:focus-visible{outline:none;}
+.notes-print{display:none;}
+
 /* ── ERİŞİLEBİLİRLİK: klavye odak halkaları (yalnızca klavye ile odakta görünür) ── */
 .btn:focus-visible,.btab:focus-visible,.sidebtn:focus-visible,.catjump-btn:focus-visible,
 .mob-tab-btn:focus-visible,.sdel:focus-visible,.hmodal-close:focus-visible,.mob-btn:focus-visible,
@@ -486,6 +500,10 @@ a:focus-visible{outline:2px solid var(--brand);outline-offset:2px;}
   .rbar{background:rgba(255,255,255,.9)!important;}
   .rcls{background:#fff!important;font-size:.72rem;}
   .rministry{background:rgba(255,255,255,.2)!important;border-color:rgba(255,255,255,.4)!important;}
+  /* Kurul Kararı / Açıklama: yazdırmada textarea yerine tam-metin ayna div; boşsa gizle */
+  .notes-ta{display:none!important;}
+  .notes-print{display:block!important;white-space:pre-wrap;word-break:break-word;font-size:.8rem;line-height:1.6;color:#0f172a;padding:2px 0;}
+  .notes-card.notes-empty{display:none!important;}
   .print-header{display:block!important;text-align:center;border-bottom:2px solid #1e40af;padding-bottom:10px;margin-bottom:14px;}
   .print-header .ph-title{font-size:14px;font-weight:800;color:#1e40af;letter-spacing:.02em;}
   .print-header .ph-sub{font-size:10px;color:#475569;margin-top:2px;}
@@ -625,6 +643,17 @@ a:focus-visible{outline:2px solid var(--brand);outline-offset:2px;}
       <div class="card" id="statsCard" style="display:none">
         <div class="ch"><span class="ico ico-green">📈</span>İstatistikler</div>
         <div class="cb"><div id="statsBody"></div></div>
+      </div>
+
+      <div class="card notes-card" id="notesCard">
+        <div class="ch">
+          <span class="ico ico-blue">📝</span>Kurul Kararı / Açıklama
+          <span class="no-print" style="margin-left:auto;font-weight:500;font-size:.62rem;color:var(--ink4);text-transform:none;letter-spacing:0">rapora ve JSON'a eklenir</span>
+        </div>
+        <div class="cb">
+          <textarea id="pNotes" class="notes-ta" placeholder="Kurulun kararı, gerekçe, ek tıbbi görüş, itiraz/istişare notları… (isteğe bağlı — yazdırma raporuna ve JSON çıktısına eklenir)"></textarea>
+          <div class="notes-print" id="notesPrint"></div>
+        </div>
       </div>
 
       <div class="brow no-print">
@@ -3200,7 +3229,7 @@ const LS_KEY = 'balthazard_session';
 
 function saveSession() {
   try {
-    const pFields = ['pName','pTC','pDOB','pGender','pInst','pDate','pDoc','pSpec'];
+    const pFields = ['pName','pTC','pDOB','pGender','pInst','pDate','pDoc','pSpec','pNotes'];
     const patient = {};
     pFields.forEach(id => { patient[id] = document.getElementById(id)?.value || ''; });
     localStorage.setItem(LS_KEY, JSON.stringify({ sel, patient }));
@@ -3221,6 +3250,16 @@ function loadSession() {
       calcAge();
     }
   } catch(e) {}
+  syncNotesPrint();
+}
+
+// Kurul Kararı / Açıklama alanını yazdırma-aynası div'ine kopyalar (textarea baskıda içeriği kırpabilir).
+function syncNotesPrint() {
+  const ta = document.getElementById('pNotes');
+  const np = document.getElementById('notesPrint');
+  if (ta && np) np.textContent = ta.value;
+  const card = document.getElementById('notesCard');
+  if (ta && card) card.classList.toggle('notes-empty', !(ta.value || '').trim());
 }
 
 // ═══════════════════════════════════════════════════
@@ -3238,10 +3277,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (hBtn) hBtn.style.display = curBranch === 'ent' ? 'block' : 'none';
 
   // Hasta alanlarında değişiklik → kaydet
-  ['pName','pTC','pDOB','pGender','pInst','pDate','pDoc','pSpec'].forEach(id => {
+  ['pName','pTC','pDOB','pGender','pInst','pDate','pDoc','pSpec','pNotes'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', saveSession);
     document.getElementById(id)?.addEventListener('change', saveSession);
   });
+  document.getElementById('pNotes')?.addEventListener('input', syncNotesPrint);
+  window.addEventListener('beforeprint', syncNotesPrint);
+  syncNotesPrint(); // başlangıçta boş/dolu durumunu (notes-empty sınıfı) ayarla
 
   // Escape → arama temizle
   document.getElementById('search').addEventListener('keydown', e => {
@@ -3893,6 +3935,7 @@ function exportJSON() {
       uzmanHekim: pv('pDoc'),
       uzmanlikDali: pv('pSpec'),
     },
+    kurulKarari: pv('pNotes'),
     seciliEngeller: r.items.map(it => ({
       ad: it.name,
       brans: it.branch,
@@ -3917,7 +3960,7 @@ function exportJSON() {
       sel: sel,
       patient: (() => {
         const p = {};
-        ['pName','pTC','pDOB','pGender','pInst','pDate','pDoc','pSpec'].forEach(id => { p[id] = pv(id); });
+        ['pName','pTC','pDOB','pGender','pInst','pDate','pDoc','pSpec','pNotes'].forEach(id => { p[id] = pv(id); });
         return p;
       })(),
     },
@@ -3970,7 +4013,7 @@ function importReport(input) {
       });
       calcAge();
     }
-    renderList(); renderSelPanel(); recalc(); saveSession(); updateWarnings();
+    renderList(); renderSelPanel(); recalc(); saveSession(); updateWarnings(); syncNotesPrint();
     const n = Object.keys(restored).length;
     showToast(dropped ? `${n} engel yüklendi (${dropped} tanı artık listede yok, atlandı).`
                       : `${n} engel başarıyla yüklendi.`, dropped ? 'info' : 'success');
